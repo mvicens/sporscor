@@ -1,2 +1,1 @@
-# sporscor
-SporScor.
+# SporScor
