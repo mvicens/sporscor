@@ -1,7 +1,7 @@
 {
   "name": "sporscor",
   "version": "1.0.0",
-  "description": "TypeScript API to manage scoreboard and statistics of sports",
+  "description": "TypeScript API to manage scoreboard and statistics of sports.",
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
