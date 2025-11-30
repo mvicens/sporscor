@@ -1,0 +1,20 @@
+:root {
+	--ss-color-dark: #000;
+	--ss-color-light: #fff;
+
+	--ss-opacity-lowlight: .5;
+}
+
+@media (prefers-color-scheme: light) {
+	:root {
+		--ss-fg: var(--ss-color-dark);
+		--ss-bg: var(--ss-color-light);
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--ss-fg: var(--ss-color-light);
+		--ss-bg: var(--ss-color-dark);
+	}
+}

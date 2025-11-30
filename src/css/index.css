@@ -1,0 +1,6 @@
+@import './variables.css';
+@import './reset.css';
+@import './global.css';
+@import './tables.css';
+@import './utils.css';
+@import './components/index.css';

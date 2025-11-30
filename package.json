@@ -1,0 +1,26 @@
+{
+  "name": "sporscor",
+  "version": "1.0.0",
+  "description": "TypeScript API to manage scoreboard and statistics of sports",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mvicens/sporscor.git"
+  },
+  "keywords": [
+    "score"
+  ],
+  "author": "Miquel Alejandro Vicens Dalmau",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mvicens/sporscor/issues"
+  },
+  "homepage": "https://github.com/mvicens/sporscor#readme",
+  "dependencies": {
+    "easytimer.js": "^4.6.0",
+    "pluralize": "^8.0.0"
+  }
+}

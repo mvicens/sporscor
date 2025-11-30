@@ -1,0 +1,1 @@
+export type PendingPointsMaxToGoToRest = Set<number>;

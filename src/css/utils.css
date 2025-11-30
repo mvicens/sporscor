@@ -1,0 +1,13 @@
+.ss-hidden {
+	display: none !important;
+}
+
+.ss-invisible,
+.ss-invisible::before,
+.ss-invisible::after {
+	visibility: hidden !important;
+}
+
+.ss-lowlight {
+	opacity: var(--ss-opacity-lowlight) !important;
+}

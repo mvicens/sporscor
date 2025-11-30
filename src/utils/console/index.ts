@@ -1,0 +1,1 @@
+export { info, log, warn } from './fns';

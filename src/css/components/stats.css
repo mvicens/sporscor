@@ -1,0 +1,16 @@
+.ss-stats {
+	background-color: var(--ss-bg);
+	padding: 10vh 10vw;
+}
+
+.ss-stats table {
+	text-align: center;
+	margin: 0 auto;
+}
+
+.ss-label-left.ss-label-left {
+	display: none;
+}
+tbody .ss-label-left {
+	text-align: left;
+}

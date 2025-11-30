@@ -1,0 +1,24 @@
+.ss-root table {
+	border-collapse: collapse;
+}
+
+.ss-root caption {
+	margin-bottom: 1em;
+}
+
+.ss-root th,
+.ss-root td {
+	background-color: var(--ss-bg);
+	padding: 1em;
+	border: 1px solid;
+}
+
+.ss-root th {
+	color: var(--ss-bg);
+	background-color: var(--ss-fg);
+	border-color: var(--ss-fg);
+}
+.ss-root th:empty {
+	background: none;
+	border: 0;
+}

@@ -1,0 +1,48 @@
+.ss-root,
+.ss-root *,
+.ss-root ::before,
+.ss-root ::after {
+	all: initial;
+	box-sizing: border-box;
+}
+
+.ss-root *,
+.ss-root ::before,
+.ss-root ::after {
+	text-align: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	font-variant: inherit;
+	color: inherit;
+	/* And any inherit that is used */
+}
+
+/* .ss-root div, */
+/* And rest of block-level elements */
+div.ss-root {
+	display: block;
+}
+
+.ss-root table {
+	display: table;
+}
+.ss-root caption {
+	display: table-caption;
+}
+.ss-root thead {
+	display: table-header-group;
+}
+.ss-root tbody {
+	display: table-row-group;
+}
+.ss-root tr {
+	display: table-row;
+}
+.ss-root th,
+.ss-root td {
+	display: table-cell;
+}
+
+.ss-root sup {
+	vertical-align: super;
+}
