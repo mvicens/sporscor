@@ -1,5 +1,3 @@
-import './css/index.css';
-
 import pluralize from 'pluralize';
 import type { StatsList } from '..';
 import Match, { RestType } from '..';
@@ -9,6 +7,8 @@ import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, EMPTY_INTERPOLATION_DEFINITION, ensureArray, getClassNames, getInterpolation, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP, StatId, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
 import { NAME_BY_SCORE_LEVEL } from './consts';
 import type { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
+
+import './css/index.css';
 
 export default class ScoredMatch extends Match {
 	#verify(config: Config) {

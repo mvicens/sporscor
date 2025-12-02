@@ -6,6 +6,8 @@ import { NAME_BY_PARTICIPANT_TYPE } from './consts';
 import { RestType, Stage } from './enums';
 import type { Config, StatsList, Timeouts } from './types';
 
+import './css/index.css';
+
 export default class Match {
 	#verify(participantOne: Participant, participantTwo: Participant) {
 		if (participantOne.getId() === participantTwo.getId())

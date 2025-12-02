@@ -1,5 +1,3 @@
-import './css/index.css';
-
 import ScoredMatch from '..';
 import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport, type MatchConfig } from '../..';
 import { EMPTY_HTML } from '../../../consts';
@@ -7,6 +5,8 @@ import { Player } from '../../../participant';
 import { assertIsDefined, DualMetric, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined, ScoreLevel, StatId, type InterpolationDefinition } from '../../../utils';
 import { ADVANTAGE_SYMBOL, MIN_TO_WIN_GAME, MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_IN_GAME, SERVES_PER_POINT, TOTAL_GAMES_WHEN_TIE_BREAK_WON, TOTAL_OF_SETS } from './consts';
 import { getTotalGames, isInTieBreak } from './fns';
+
+import './css/index.css';
 
 export default class TennisMatch extends ScoredMatch {
 	constructor(playerOne: Player, playerTwo: Player, onChange: MatchConfig['onChange']) {
