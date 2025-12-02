@@ -19,20 +19,20 @@ export default class BasketballMatch extends Match {
 		});
 
 		const
-			onChangeTimer = () => { this.dispatchEvent(); },
+			onTimerChange = () => { this.dispatchEvent(); },
 			items: Array<TimerItem> = [
 				{
 					id: 'general',
 					initialTime: INITIAL_MINUTES * 60,
 					decimaledTime: DECIMALED_MINUTES * 60,
-					onChange: onChangeTimer,
+					onChange: onTimerChange,
 					onFinish: () => { this.finishPart(); }
 				},
 				{
 					id: POSSESSION_ID,
 					initialTime: INITIAL_POSSESSION_SECONDS,
 					decimaledTime: DECIMALED_POSSESSION_SECONDS,
-					onChange: onChangeTimer,
+					onChange: onTimerChange,
 					onFinish: () => {
 						this._pause(() => {
 							info('The possession time is over');
@@ -66,18 +66,25 @@ export default class BasketballMatch extends Match {
 
 	public getScoreboard() {
 		const
-			participantTypeTh = `<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>`,
-			pointsTh = '<th scope="col">Points</th>',
+			ths = [
+				`<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>`,
+				'<th scope="col">Points</th>'
+			],
 			isStarted = this.isStarted(),
 			isSomeBallPossession = this.hasBallPossession.some(isTrue),
+			bodyCells = (isTeamTwo: boolean) => {
+				const team = this.participant[!isTeamTwo ? 'getOfOne' : 'getOfTwo']();
+				return [
+					`<th scope="row">${upperFirst(this.participant.getBy(team).getName())}</th>`,
+					`<td>${this.stats.get(StatId.TotalPoints, team)}</td>`
+				];
+			},
 			getTime = (id: TimerId) => `<span class="${getClassNames(this.isRunning() ? null : 'lowlight')}">${this.timer.getTimeOf(id)}</span>`;
 		return this.getUltimateScoreboard(
 			`<thead>
 					<tr>
-						${participantTypeTh}
-						${pointsTh}
-						${pointsTh}
-						${participantTypeTh}
+						${ths.join('')}
+						${ths.reverse().join('')}
 						${!isStarted ? EMPTY_HTML : '<th scope="col">Part</th>'}
 						${!isStarted ? EMPTY_HTML : '<th scope="col">Time</th>'}
 						${!isSomeBallPossession ? EMPTY_HTML : '<th scope="col">Possession</th>'}
@@ -85,10 +92,8 @@ export default class BasketballMatch extends Match {
 				</thead>
 				<tbody>
 					<tr>
-						<th scope="row">${upperFirst(this.participant.getOfOne().getName())}</th>
-						<td>${this.stats.getOfOne(StatId.TotalPoints)}</td>
-						<td>${this.stats.getOfTwo(StatId.TotalPoints)}</td>
-						<th scope="row">${upperFirst(this.participant.getOfTwo().getName())}</th>
+						${bodyCells(false).join('')}
+						${bodyCells(true).reverse().join('')}
 						${!isStarted ? EMPTY_HTML : `<td>${getOrdinal(this.parts.current)}</td>`}
 						${!isStarted ? EMPTY_HTML : `<td>${getTime('general')}</td>`}
 						${!isSomeBallPossession ? EMPTY_HTML : `<td>${getTime(POSSESSION_ID)}</td>`}
@@ -108,35 +113,39 @@ export default class BasketballMatch extends Match {
 		[StatId.FreeThrowsMade, StatId.FreeThrowsAttempted, IS_PERCENTAGE_STAT_ID],
 	]);
 
-	private verifyIsOpeningBallPossessorRequired(value?: OpeningBallPossessor) {
-		const hasOpeningBallPossessor = isDefined(value);
-		if (!this.wasPlayed) {
-			if (!hasOpeningBallPossessor)
-				throw new Error('An opening ball possessor is required');
-		} else if (hasOpeningBallPossessor)
-			warn('The opening ball possessor is unrequired');
-	}
 	private verifyIsPlayingOrAtRest() {
 		if (!this.isPlaying() && !this.isAtRest())
 			throw new Error('The match is not being playing nor is at rest');
 	}
 	private verifyIsNotPaused() {
-		if (!this.isRunning())
+		if (this.isPaused())
 			throw new Error('The match is already paused');
 	}
 	private verifyIsPaused() {
-		if (this.isRunning())
+		if (!this.isPaused())
 			throw new Error('The match is not paused');
 	}
 	private verifyIsInTimeoutOrPreparing() {
 		if (!this.isInTimeout() && !this.isPreparing())
 			throw new Error('The match is not in timeout nor is being prepared');
 	}
+	private verifyIsNotInFreeThrowsSituation() {
+		if (this.isInFreeThrowsSituation)
+			throw new Error('The match is in free throws situation');
+	}
 
 	public start() {
 		super.start(() => { this.timer.resetAll(); });
 	}
 
+	private verifyIsOpeningBallPossessorOk(value?: OpeningBallPossessor) {
+		const hasValue = isDefined(value);
+		if (!this.wasPlayed) {
+			if (!hasValue)
+				throw new Error('An opening ball possessor is required');
+		} else if (hasValue)
+			warn('The opening ball possessor is unrequired');
+	}
 	public play(openingBallPossessor?: OpeningBallPossessor) {
 		const hasOpeningBallPossessor = isDefined(openingBallPossessor);
 		super.play(
@@ -155,7 +164,7 @@ export default class BasketballMatch extends Match {
 					this.verifyIsPreparing();
 				else
 					this.verifyIsInTimeoutOrPreparing();
-				this.verifyIsOpeningBallPossessorRequired(openingBallPossessor);
+				this.verifyIsOpeningBallPossessorOk(openingBallPossessor);
 			}
 		);
 	}
@@ -230,42 +239,37 @@ export default class BasketballMatch extends Match {
 		});
 	}
 
+	private logPoints(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean, verify = noop, execute = noop) {
+		this.verifyIsPlayingOrAtRest();
+		verify();
+
+		const ballPossessor = this.getBallPossessor();
+		this.stats.increase(statIdAttempted, ballPossessor);
+		if (isSuccessful) {
+			this.stats.increase(statIdMade, ballPossessor);
+
+			for (let i = 0; i < qty; i++)
+				this.stats.increase(StatId.TotalPoints, this.getBallPossessor());
+		}
+
+		execute();
+
+		this.dispatchEvent();
+	}
+
 	private wasPointAttemptedOutOfTime = false;
-	private verifyIsPointFirstAttemptedOutOfTime() {
+	private verifyIsPointAttemptedOutOfTimeUnique() {
 		if (this.wasPointAttemptedOutOfTime)
 			throw new Error('There was already a attempted point out of time');
 	}
-	private verifyIsNotInFreeThrowsSituation() {
-		if (this.isInFreeThrowsSituation)
-			throw new Error('The match is in free throws situation');
-	}
-	private getFnOfLogPoints(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean, verify = noop, execute = noop) {
-		return () => {
-			this.verifyIsPlayingOrAtRest();
-			verify();
-
-			const ballPossessor = this.getBallPossessor();
-			this.stats.increase(statIdAttempted, ballPossessor);
-			if (isSuccessful) {
-				this.stats.increase(statIdMade, ballPossessor);
-
-				for (let i = 0; i < qty; i++)
-					this.stats.increase(StatId.TotalPoints, this.getBallPossessor());
-			}
-
-			execute();
-
-			this.dispatchEvent();
-		};
-	}
-	private getFnOfLogNormalPoints(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean) {
-		return this.getFnOfLogPoints(
+	private logNormalPoints(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean) {
+		this.logPoints(
 			qty,
 			statIdAttempted,
 			statIdMade,
 			isSuccessful,
 			() => {
-				this.verifyIsPointFirstAttemptedOutOfTime();
+				this.verifyIsPointAttemptedOutOfTimeUnique();
 				this.verifyIsNotInFreeThrowsSituation();
 			},
 			() => {
@@ -277,11 +281,25 @@ export default class BasketballMatch extends Match {
 			}
 		);
 	}
-	private getFnOfLogFreeThrow(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean) {
-		return this.getFnOfLogPoints(
-			qty,
-			statIdAttempted,
-			statIdMade,
+
+	private logTwoPointer(isSuccessful: boolean) {
+		this.logNormalPoints(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, isSuccessful);
+	}
+	public logTwoPointerFailed() { this.logTwoPointer(false); }
+	public logTwoPointerMade() { this.logTwoPointer(true); }
+
+	private logThreePointer(isSuccessful: boolean) {
+		this.logNormalPoints(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, isSuccessful);
+	}
+	public logThreePointerFailed() { this.logThreePointer(false); }
+	public logThreePointerMade() { this.logThreePointer(true); }
+
+	private isInFreeThrowsSituation = false;
+	private logFreeThrow(isSuccessful: boolean) {
+		this.logPoints(
+			1,
+			StatId.FreeThrowsAttempted,
+			StatId.FreeThrowsMade,
 			isSuccessful,
 			() => { this.verifyIsPaused(); },
 			() => {
@@ -290,19 +308,11 @@ export default class BasketballMatch extends Match {
 			}
 		);
 	}
-
-	public logTwoPointerMade = this.getFnOfLogNormalPoints(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, true);
-	public logTwoPointerFailed = this.getFnOfLogNormalPoints(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, false);
-
-	public logThreePointerMade = this.getFnOfLogNormalPoints(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, true);
-	public logThreePointerFailed = this.getFnOfLogNormalPoints(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, false);
-
-	private isInFreeThrowsSituation = false;
-	public logFreeThrowMade = this.getFnOfLogFreeThrow(1, StatId.FreeThrowsAttempted, StatId.FreeThrowsMade, true);
-	public logFreeThrowFailed = this.getFnOfLogFreeThrow(1, StatId.FreeThrowsAttempted, StatId.FreeThrowsMade, false);
+	public logFreeThrowFailed() { this.logFreeThrow(false); }
+	public logFreeThrowMade() { this.logFreeThrow(true); }
 
 	private finishPart() {
-		this._pause();
+		this.pause();
 
 		const { current, total } = this.parts;
 		if (current < total) {
