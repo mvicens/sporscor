@@ -1,4 +1,5 @@
 export const PARTS = 4;
+export const LAST_PART_OF_FIRST_HALF = PARTS / 2;
 
 export const INITIAL_MINUTES = 10;
 export const DECIMALED_MINUTES = 1;
@@ -9,3 +10,6 @@ export const DECIMALED_POSSESSION_SECONDS = 5;
 
 export const TIMEOUTS_PER_FIRST_HALF = 2;
 export const TIMEOUTS_PER_SECOND_HALF = 3;
+
+export const FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL = 2;
+export const FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET = 1;

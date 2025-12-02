@@ -3,7 +3,7 @@ import { EMPTY_HTML } from '../../consts';
 import type { Team } from '../../participant';
 import { DualMetric, StatId, Timer, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTrue, noop, upperFirst, warn, type TimerId, type TimerItem } from '../../utils';
 import { Stage } from '../enums';
-import { DECIMALED_MINUTES, DECIMALED_POSSESSION_SECONDS, INITIAL_MINUTES, INITIAL_POSSESSION_SECONDS, PARTS, POSSESSION_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
+import { DECIMALED_MINUTES, DECIMALED_POSSESSION_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_POSSESSION_SECONDS, LAST_PART_OF_FIRST_HALF, PARTS, POSSESSION_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
 import type { OpeningBallPossessor, Parts } from './types';
 
 export default class BasketballMatch extends Match {
@@ -13,7 +13,7 @@ export default class BasketballMatch extends Match {
 			participants: [teamOne, teamTwo],
 			onChange,
 			timeouts: {
-				qtyPerPhase: () => this.parts.current <= 2 ? TIMEOUTS_PER_FIRST_HALF : TIMEOUTS_PER_SECOND_HALF,
+				qtyPerPhase: () => this.parts.current <= LAST_PART_OF_FIRST_HALF ? TIMEOUTS_PER_FIRST_HALF : TIMEOUTS_PER_SECOND_HALF,
 				isDoneable: team => this.isPaused() && this.hasBallPossession.getBy(team)
 			}
 		});
@@ -129,8 +129,9 @@ export default class BasketballMatch extends Match {
 		if (!this.isInTimeout() && !this.isPreparing())
 			throw new Error('The match is not in timeout nor is being prepared');
 	}
+	private isInFreeThrowsSituation = () => this.doneFreeThrowsQty > 0;
 	private verifyIsNotInFreeThrowsSituation() {
-		if (this.isInFreeThrowsSituation)
+		if (this.isInFreeThrowsSituation())
 			throw new Error('The match is in free throws situation');
 	}
 
@@ -170,7 +171,10 @@ export default class BasketballMatch extends Match {
 	}
 
 	private hasBallPossession = new DualMetric(false);
-	private switchBallPossession() { this.hasBallPossession.swap(); }
+	private switchBallPossession() {
+		this.hasBallPossession.swap();
+		this.possibleFreeThrowsQty = 0;
+	}
 	private getBallPossessor() {
 		const team = this.hasBallPossession.getParticipantIf(isTrue);
 		assertIsDefined(team);
@@ -180,9 +184,16 @@ export default class BasketballMatch extends Match {
 	private resetPosessionTime() {
 		this.timer.reset(POSSESSION_ID);
 	}
+	private verifyCanChangeBallPossession() {
+		const isFoulSpecial = // Technical, unsportsmanlike or disqualifying
+			this.isInFreeThrowsSituation() && !this.wasOutOfTimeFieldBasketAttempted;
+		if (isFoulSpecial)
+			throw new Error('Cannot change ball possession');
+	}
 	public logBallPossessionOf(team: Team) {
 		this.verifyIsParticipantRegistered(team);
 		this.verifyIsPlaying();
+		this.verifyCanChangeBallPossession();
 
 		DualMetric.setFocusedParticipant(team);
 		const hasBallPossession = this.hasBallPossession.get();
@@ -208,7 +219,7 @@ export default class BasketballMatch extends Match {
 		this.verifyIsPlaying();
 		execute();
 	}
-	private _pause(execute = noop) { // Auxiliar
+	private _pause(execute: VoidFunction) { // Auxiliar
 		this.handleTime(() => {
 			this.verifyIsNotPaused();
 
@@ -217,7 +228,11 @@ export default class BasketballMatch extends Match {
 			this.dispatchEvent();
 		});
 	}
-	public pause() { this._pause(); }
+	public pause() {
+		this._pause(() => {
+			this.possibleFreeThrowsQty = FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL; // At first only this if no attempted out-of-time field basket
+		});
+	}
 	public resume() {
 		this.handleTime(() => {
 			this.verifyIsPaused();
@@ -227,11 +242,13 @@ export default class BasketballMatch extends Match {
 				this.shouldResetPossessionTime = false;
 			}
 
-			if (this.wasPointAttemptedOutOfTime)
-				this.wasPointAttemptedOutOfTime = false;
+			if (this.wasOutOfTimeFieldBasketAttempted)
+				this.wasOutOfTimeFieldBasketAttempted = false;
 
-			if (this.isInFreeThrowsSituation)
-				this.isInFreeThrowsSituation = false;
+			if (this.possibleFreeThrowsQty > 0)
+				this.possibleFreeThrowsQty = 0;
+			if (this.doneFreeThrowsQty > 0)
+				this.doneFreeThrowsQty = 0;
 
 			this.timer.runAll();
 
@@ -239,7 +256,7 @@ export default class BasketballMatch extends Match {
 		});
 	}
 
-	private logPoints(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean, verify = noop, execute = noop) {
+	private logBasket(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean, verify = noop, execute = noop) {
 		this.verifyIsPlayingOrAtRest();
 		verify();
 
@@ -257,53 +274,70 @@ export default class BasketballMatch extends Match {
 		this.dispatchEvent();
 	}
 
-	private wasPointAttemptedOutOfTime = false;
-	private verifyIsPointAttemptedOutOfTimeUnique() {
-		if (this.wasPointAttemptedOutOfTime)
-			throw new Error('There was already a attempted point out of time');
+	private wasOutOfTimeFieldBasketAttempted = false;
+	private verifyIsAttemptedOutOfTimeFieldBasketUnique() {
+		if (this.wasOutOfTimeFieldBasketAttempted)
+			throw new Error('The attempted out-of-time field basket is not unique');
 	}
-	private logNormalPoints(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean) {
-		this.logPoints(
+	private logFieldBasket(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean) {
+		this.logBasket(
 			qty,
 			statIdAttempted,
 			statIdMade,
 			isSuccessful,
 			() => {
-				this.verifyIsPointAttemptedOutOfTimeUnique();
+				this.verifyIsAttemptedOutOfTimeFieldBasketUnique();
 				this.verifyIsNotInFreeThrowsSituation();
 			},
 			() => {
 				if (!this.isPaused()) {
-					this.switchBallPossession();
-					this.resetPosessionTime();
-				} else
-					this.wasPointAttemptedOutOfTime = true;
+					if (isSuccessful) {
+						this.switchBallPossession();
+						this.resetPosessionTime();
+					}
+				} else {
+					this.wasOutOfTimeFieldBasketAttempted = true;
+
+					const isFailed = !isSuccessful;
+					this.possibleFreeThrowsQty = isFailed ? FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET : qty;
+				}
 			}
 		);
 	}
 
 	private logTwoPointer(isSuccessful: boolean) {
-		this.logNormalPoints(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, isSuccessful);
+		this.logFieldBasket(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, isSuccessful);
 	}
 	public logTwoPointerFailed() { this.logTwoPointer(false); }
 	public logTwoPointerMade() { this.logTwoPointer(true); }
 
 	private logThreePointer(isSuccessful: boolean) {
-		this.logNormalPoints(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, isSuccessful);
+		this.logFieldBasket(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, isSuccessful);
 	}
 	public logThreePointerFailed() { this.logThreePointer(false); }
 	public logThreePointerMade() { this.logThreePointer(true); }
 
-	private isInFreeThrowsSituation = false;
+	private possibleFreeThrowsQty = 0;
+	private verifyHasPossibleFreeThrowsQty() {
+		const isAllDone = this.doneFreeThrowsQty >= this.possibleFreeThrowsQty; // It may be greater
+		if (isAllDone) {
+			const team = this.getBallPossessor();
+			throw new Error(`${upperFirst(team.getName())} has no possible free throws`);
+		}
+	}
+	private doneFreeThrowsQty = 0;
 	private logFreeThrow(isSuccessful: boolean) {
-		this.logPoints(
+		this.logBasket(
 			1,
 			StatId.FreeThrowsAttempted,
 			StatId.FreeThrowsMade,
 			isSuccessful,
-			() => { this.verifyIsPaused(); },
 			() => {
-				this.isInFreeThrowsSituation = true;
+				this.verifyIsPaused();
+				this.verifyHasPossibleFreeThrowsQty();
+			},
+			() => {
+				this.doneFreeThrowsQty++;
 				this.shouldResetPossessionTime = true;
 			}
 		);
@@ -317,7 +351,7 @@ export default class BasketballMatch extends Match {
 		const { current, total } = this.parts;
 		if (current < total) {
 			this.goToRest(RestType.breakPerPhase);
-			const isFirstHalfFinished = current === 2;
+			const isFirstHalfFinished = current === LAST_PART_OF_FIRST_HALF;
 			if (isFirstHalfFinished)
 				this.resetTimeouts();
 		} else
