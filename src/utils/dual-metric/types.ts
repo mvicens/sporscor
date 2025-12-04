@@ -1,5 +1,7 @@
 import type { AnyParticipant } from '../../participant';
-import type { Callback } from '../../types';
+import type { Callback, Show } from '../../types';
+
+export type NumericValue = Show<number>;
 
 export type ParticipantState = 'focused' | 'opponent';
 export type ParticipantNumeral = 'one' | 'two';

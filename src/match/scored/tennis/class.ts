@@ -90,9 +90,7 @@ export default class TennisMatch extends ScoredMatch {
 			{ scorer } = this;
 		scorer.getBy(ScoreLevel.Set).detailedQty.forEach((qty, indexOfSet) => {
 			if (qty.getTotal() === TOTAL_GAMES_WHEN_TIE_BREAK_WON) {
-				const
-					lastGameIndex = -1,
-					points = scorer.getNestedPoints(indexOfSet, lastGameIndex);
+				const lastGamePoints = scorer.getNestedPoints(indexOfSet, -1);
 				interpolationDefinition.push([
 					['addingToGamesOfSet', indexOfSet],
 					player => {
@@ -100,8 +98,8 @@ export default class TennisMatch extends ScoredMatch {
 							return EMPTY_HTML;
 
 						const
-							value = points.getBy(player),
-							opponentValue = points.getOpponentBy(player);
+							value = lastGamePoints.getBy(player),
+							opponentValue = lastGamePoints.getOpponentBy(player);
 						return `<sup>${getLightedElem(value, opponentValue)}</sup>`;
 					}
 				]);
@@ -143,7 +141,8 @@ export default class TennisMatch extends ScoredMatch {
 
 				const
 					isFirstServeIn = this.failedServes === 0,
-					isSecondServeIn = this.failedServes === 1;
+					isSecondServeIn = !isFirstServeIn &&
+						this.failedServes !== SERVES_PER_POINT;
 
 				if (isFirstServeIn)
 					this.stats.increase(StatId.FirstServesIn, server);

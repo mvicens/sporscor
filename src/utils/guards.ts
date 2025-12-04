@@ -3,7 +3,7 @@ export const isString = (value: unknown): value is string => typeof value === 's
 export const isNumber = (value: unknown): value is number => typeof value === 'number';
 
 export const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-export const isTrue = (value: unknown): value is true => value === true;
+export const isTruth = (value: unknown): value is true => value === true;
 
 // export const isObject = (value: unknown): value is object => value !== null && (typeof value === 'object' || typeof value === 'function');
 

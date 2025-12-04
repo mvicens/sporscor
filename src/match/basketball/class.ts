@@ -1,10 +1,10 @@
 import Match, { IS_PERCENTAGE_STAT_ID, RestType, Sport, type MatchConfig } from '..';
 import { EMPTY_HTML } from '../../consts';
 import type { Team } from '../../participant';
-import { DualMetric, StatId, Timer, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTrue, noop, upperFirst, warn, type TimerId, type TimerItem } from '../../utils';
+import { DualMetric, StatId, Timer, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn, type TimerId, type TimerItem } from '../../utils';
 import { Stage } from '../enums';
-import { DECIMALED_MINUTES, DECIMALED_POSSESSION_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_POSSESSION_SECONDS, LAST_PART_OF_FIRST_HALF, PARTS, POSSESSION_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
-import type { OpeningBallPossessor, Parts } from './types';
+import { DECIMALED_MINUTES, DECIMALED_SHOT_CLOCK_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_SHOT_CLOCK_SECONDS, LAST_PART_OF_FIRST_HALF, MAIN_CLOCK_ID, PARTS, SHOT_CLOCK_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
+import type { IsSuccessful, OpeningBallPossessor, Parts, Qty } from './types';
 
 export default class BasketballMatch extends Match {
 	constructor(teamOne: Team, teamTwo: Team, onChange: MatchConfig['onChange']) {
@@ -22,23 +22,23 @@ export default class BasketballMatch extends Match {
 			onTimerChange = () => { this.dispatchEvent(); },
 			items: Array<TimerItem> = [
 				{
-					id: 'general',
+					id: MAIN_CLOCK_ID,
 					initialTime: INITIAL_MINUTES * 60,
 					decimaledTime: DECIMALED_MINUTES * 60,
 					onChange: onTimerChange,
 					onFinish: () => { this.finishPart(); }
 				},
 				{
-					id: POSSESSION_ID,
-					initialTime: INITIAL_POSSESSION_SECONDS,
-					decimaledTime: DECIMALED_POSSESSION_SECONDS,
+					id: SHOT_CLOCK_ID,
+					initialTime: INITIAL_SHOT_CLOCK_SECONDS,
+					decimaledTime: DECIMALED_SHOT_CLOCK_SECONDS,
 					onChange: onTimerChange,
 					onFinish: () => {
 						this._pause(() => {
-							info('The possession time is over');
+							info('The shot clock is over');
 
 							this.switchBallPossession();
-							this.shouldResetPossessionTime = true;
+							this.shouldResetShotClock = true;
 						});
 					}
 				}
@@ -71,7 +71,7 @@ export default class BasketballMatch extends Match {
 				'<th scope="col">Points</th>'
 			],
 			isStarted = this.isStarted(),
-			isSomeBallPossession = this.hasBallPossession.some(isTrue),
+			isSomeBallPossession = this.hasBallPossession.some(isTruth),
 			bodyCells = (isTeamTwo: boolean) => {
 				const team = this.participant[!isTeamTwo ? 'getOfOne' : 'getOfTwo']();
 				return [
@@ -95,8 +95,8 @@ export default class BasketballMatch extends Match {
 						${bodyCells(false).join('')}
 						${bodyCells(true).reverse().join('')}
 						${!isStarted ? EMPTY_HTML : `<td>${getOrdinal(this.parts.current)}</td>`}
-						${!isStarted ? EMPTY_HTML : `<td>${getTime('general')}</td>`}
-						${!isSomeBallPossession ? EMPTY_HTML : `<td>${getTime(POSSESSION_ID)}</td>`}
+						${!isStarted ? EMPTY_HTML : `<td>${getTime(MAIN_CLOCK_ID)}</td>`}
+						${!isSomeBallPossession ? EMPTY_HTML : `<td>${getTime(SHOT_CLOCK_ID)}</td>`}
 					</tr>
 				</tbody>`
 		);
@@ -129,7 +129,7 @@ export default class BasketballMatch extends Match {
 		if (!this.isInTimeout() && !this.isPreparing())
 			throw new Error('The match is not in timeout nor is being prepared');
 	}
-	private isInFreeThrowsSituation = () => this.doneFreeThrowsQty > 0;
+	private isInFreeThrowsSituation = () => this.doneFreeThrows > 0;
 	private verifyIsNotInFreeThrowsSituation() {
 		if (this.isInFreeThrowsSituation())
 			throw new Error('The match is in free throws situation');
@@ -173,16 +173,16 @@ export default class BasketballMatch extends Match {
 	private hasBallPossession = new DualMetric(false);
 	private switchBallPossession() {
 		this.hasBallPossession.swap();
-		this.possibleFreeThrowsQty = 0;
+		this.possibleFreeThrows = 0;
 	}
 	private getBallPossessor() {
-		const team = this.hasBallPossession.getParticipantIf(isTrue);
+		const team = this.hasBallPossession.getParticipantIf(isTruth);
 		assertIsDefined(team);
 		return team;
 	}
-	private shouldResetPossessionTime = false;
-	private resetPosessionTime() {
-		this.timer.reset(POSSESSION_ID);
+	private shouldResetShotClock = false;
+	private resetShotClock() {
+		this.timer.reset(SHOT_CLOCK_ID);
 	}
 	private verifyCanChangeBallPossession() {
 		const isFoulSpecial = // Technical, unsportsmanlike or disqualifying
@@ -206,10 +206,10 @@ export default class BasketballMatch extends Match {
 			else {
 				this.switchBallPossession();
 				if (this.isRunning())
-					this.resetPosessionTime();
+					this.resetShotClock();
 				else {
 					info(`${upperFirst(team.getName())} has ball possession`);
-					this.shouldResetPossessionTime = true;
+					this.shouldResetShotClock = true;
 				}
 			}
 		}
@@ -230,25 +230,25 @@ export default class BasketballMatch extends Match {
 	}
 	public pause() {
 		this._pause(() => {
-			this.possibleFreeThrowsQty = FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL; // At first only this if no attempted out-of-time field basket
+			this.possibleFreeThrows = FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL; // At first, only this qty. while no attempted out-of-time field basket
 		});
 	}
 	public resume() {
 		this.handleTime(() => {
 			this.verifyIsPaused();
 
-			if (this.shouldResetPossessionTime) {
-				this.resetPosessionTime();
-				this.shouldResetPossessionTime = false;
+			if (this.shouldResetShotClock) {
+				this.resetShotClock();
+				this.shouldResetShotClock = false;
 			}
 
 			if (this.wasOutOfTimeFieldBasketAttempted)
 				this.wasOutOfTimeFieldBasketAttempted = false;
 
-			if (this.possibleFreeThrowsQty > 0)
-				this.possibleFreeThrowsQty = 0;
-			if (this.doneFreeThrowsQty > 0)
-				this.doneFreeThrowsQty = 0;
+			if (this.possibleFreeThrows > 0)
+				this.possibleFreeThrows = 0;
+			if (this.doneFreeThrows > 0)
+				this.doneFreeThrows = 0;
 
 			this.timer.runAll();
 
@@ -256,7 +256,7 @@ export default class BasketballMatch extends Match {
 		});
 	}
 
-	private logBasket(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean, verify = noop, execute = noop) {
+	private logBasket(qty: Qty, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: IsSuccessful, verify = noop, execute = noop) {
 		this.verifyIsPlayingOrAtRest();
 		verify();
 
@@ -279,7 +279,7 @@ export default class BasketballMatch extends Match {
 		if (this.wasOutOfTimeFieldBasketAttempted)
 			throw new Error('The attempted out-of-time field basket is not unique');
 	}
-	private logFieldBasket(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: boolean) {
+	private logFieldBasket(qty: Qty, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: IsSuccessful) {
 		this.logBasket(
 			qty,
 			statIdAttempted,
@@ -293,40 +293,41 @@ export default class BasketballMatch extends Match {
 				if (!this.isPaused()) {
 					if (isSuccessful) {
 						this.switchBallPossession();
-						this.resetPosessionTime();
+						this.resetShotClock();
 					}
 				} else {
 					this.wasOutOfTimeFieldBasketAttempted = true;
 
 					const isFailed = !isSuccessful;
-					this.possibleFreeThrowsQty = isFailed ? FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET : qty;
+					this.possibleFreeThrows = isFailed ? FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET : qty;
 				}
 			}
 		);
 	}
 
-	private logTwoPointer(isSuccessful: boolean) {
+	private logTwoPointer(isSuccessful: IsSuccessful) {
 		this.logFieldBasket(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, isSuccessful);
 	}
 	public logTwoPointerFailed() { this.logTwoPointer(false); }
 	public logTwoPointerMade() { this.logTwoPointer(true); }
 
-	private logThreePointer(isSuccessful: boolean) {
+	private logThreePointer(isSuccessful: IsSuccessful) {
 		this.logFieldBasket(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, isSuccessful);
 	}
 	public logThreePointerFailed() { this.logThreePointer(false); }
 	public logThreePointerMade() { this.logThreePointer(true); }
 
-	private possibleFreeThrowsQty = 0;
-	private verifyHasPossibleFreeThrowsQty() {
-		const isAllDone = this.doneFreeThrowsQty >= this.possibleFreeThrowsQty; // It may be greater
+	private possibleFreeThrows = 0;
+	private verifyHasPossibleFreeThrows() {
+		const isAllDone = this.doneFreeThrows >= // It may be greater
+			this.possibleFreeThrows;
 		if (isAllDone) {
 			const team = this.getBallPossessor();
 			throw new Error(`${upperFirst(team.getName())} has no possible free throws`);
 		}
 	}
-	private doneFreeThrowsQty = 0;
-	private logFreeThrow(isSuccessful: boolean) {
+	private doneFreeThrows = 0;
+	private logFreeThrow(isSuccessful: IsSuccessful) {
 		this.logBasket(
 			1,
 			StatId.FreeThrowsAttempted,
@@ -334,11 +335,11 @@ export default class BasketballMatch extends Match {
 			isSuccessful,
 			() => {
 				this.verifyIsPaused();
-				this.verifyHasPossibleFreeThrowsQty();
+				this.verifyHasPossibleFreeThrows();
 			},
 			() => {
-				this.doneFreeThrowsQty++;
-				this.shouldResetPossessionTime = true;
+				this.doneFreeThrows++;
+				this.shouldResetShotClock = true;
 			}
 		);
 	}

@@ -2,10 +2,10 @@ import { assertIsDefined, assertIsNumber, DeveloperError, isUndefined, pickRando
 import { Participant } from '../../participant';
 import type { Callback } from '../../types';
 import { getOpponentBy, getParticipantNumeral, setValueOfParticipantNumeralByStateProperty, verifyIsParticipantRegistered } from './fns';
-import type { ParticipantNumeral, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
+import type { NumericValue, ParticipantNumeral, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
 import { participantsValues } from './vars';
 
-export default class DualMetric<T = number> {
+export default class DualMetric<T = NumericValue> {
 	static setParticipants(participantOne: Participant, participantTwo: Participant) {
 		if (participantOne.getId() === participantTwo.getId())
 			throw new DeveloperError('Both participants are the same one');
@@ -86,7 +86,7 @@ export default class DualMetric<T = number> {
 
 	getAll = this.#getValues;
 
-	#getNumberValues(): [number, number] {
+	#getNumericValues(): [NumericValue, NumericValue] {
 		const
 			result = this.#getValues(),
 			[valueOfOne, valueOfTwo] = result;
@@ -95,15 +95,15 @@ export default class DualMetric<T = number> {
 		return [valueOfOne, valueOfTwo];
 	}
 	getMax() {
-		const [valueOfOne, valueOfTwo] = this.#getNumberValues();
+		const [valueOfOne, valueOfTwo] = this.#getNumericValues();
 		return Math.max(valueOfOne, valueOfTwo);
 	}
 	// getMin() {
-	// 	const [valueOfOne, valueOfTwo] = this.#getNumberValues();
+	// 	const [valueOfOne, valueOfTwo] = this.#getNumericValues();
 	// 	return Math.min(valueOfOne, valueOfTwo);
 	// }
 	getTotal() {
-		const [valueOfOne, valueOfTwo] = this.#getNumberValues();
+		const [valueOfOne, valueOfTwo] = this.#getNumericValues();
 		return valueOfOne + valueOfTwo;
 	}
 
@@ -177,17 +177,17 @@ export default class DualMetric<T = number> {
 		this.setOfTwo(valueOfOne);
 	}
 
-	#isNumberSatisfying(comparedValue: number, predicate: (value: number, comparedValue: number) => boolean) {
+	#isNumberSatisfying(comparedValue: NumericValue, predicate: (value: NumericValue, comparedValue: NumericValue) => boolean) {
 		const value = this.get();
 		assertIsNumber(value);
 		return predicate(value, comparedValue);
 	}
 
-	isLessThan = (comparedValue: number) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value < comparedValue);
-	// isEqualTo = (comparedValue: number) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value === comparedValue);
-	// isAtLeast = (comparedValue: number) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value >= comparedValue);
+	isLessThan = (comparedValue: NumericValue) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value < comparedValue);
+	// isEqualTo = (comparedValue: NumericValue) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value === comparedValue);
+	// isAtLeast = (comparedValue: NumericValue) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value >= comparedValue);
 
-	isDiffAtLeast(qty: number) {
+	isDiffAtLeast(qty: NumericValue) {
 		const valueOfOne = this.getOfOne();
 		assertIsNumber(valueOfOne);
 

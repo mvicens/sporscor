@@ -3,7 +3,7 @@ import { Participant, type AnyParticipant } from '../../participant';
 import type { ParticipantNumeral } from './types';
 import { participantsValues } from './vars';
 
-export function verifyIsParticipantRegistered(participant: Participant, withNormalError = false) {
+export function verifyIsParticipantRegistered(participant: Participant, withUsualError = false) {
 	assertIsDefined(participantsValues.participantByNumeral);
 	const
 		id = participant.getId(),
@@ -13,7 +13,7 @@ export function verifyIsParticipantRegistered(participant: Participant, withNorm
 		});
 
 	if (!isParticipantRegistered) {
-		if (withNormalError)
+		if (withUsualError)
 			throw new Error('The participant is not registered');
 		else
 			throw new DeveloperError('Participant is not registered');

@@ -31,7 +31,7 @@ type ScoreLevelConfig =
 	};
 type Value = {
 	original: number;
-	transformed: number | string;
+	transformed: ReturnType<NonNullable<ScoreLevelConfigOfScorer['transformer']>>;
 };
 export type GetColsCbArg = {
 	scoreLevel: ScoreLevelConfig;

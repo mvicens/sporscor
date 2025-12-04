@@ -13,7 +13,7 @@ export { ensureArray, ensureNumber, ensureString } from './ensures';
 
 export { DeveloperError, DeveloperTypeError } from './errors';
 
-export { isArray, isBoolean, isDefined, isFunction, isNumber, isString, isTrue, isUndefined } from './guards';
+export { isArray, isBoolean, isDefined, isFunction, isNumber, isString, isTruth, isUndefined } from './guards';
 
 export { getClassNames, getLightedElem } from './html';
 

@@ -1,8 +1,6 @@
-import type { Html } from './types';
-
 export const NOT_AVAILABLE_ABBR = 'N/A';
 
-export const EMPTY_HTML: Html = '';
+export const EMPTY_HTML = '';
 
 export const CLASS_NAME_BY_ID = {
 	content: 'content',
