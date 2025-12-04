@@ -6,7 +6,7 @@ export const INITIAL_MINUTES = 10;
 export const DECIMALED_MINUTES = 1;
 
 export const SHOT_CLOCK_ID = 'SC';
-export const INITIAL_SHOT_CLOCK_SECONDS = 25;
+export const INITIAL_SHOT_CLOCK_SECONDS = 24;
 export const DECIMALED_SHOT_CLOCK_SECONDS = 5;
 
 export const TIMEOUTS_PER_FIRST_HALF = 2;
