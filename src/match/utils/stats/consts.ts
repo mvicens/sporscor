@@ -1,4 +1,4 @@
-import { Sport } from '../../match';
+import { Sport } from '../..';
 import { Id } from './enums';
 import type { LabelById } from './types';
 

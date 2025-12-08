@@ -1,7 +1,7 @@
 import type { MatchConfig } from '..';
 import { Participant } from '../../participant';
 import type { Callback, ClassName, EventListenersBy, Index, Show } from '../../types';
-import { ScoreLevel, Scorer, type IsHigherScoreLevelNew, type ScoreLevelConfigOfScorer, type ValueOrProviderFromScorer } from '../../utils';
+import { type IsHigherScoreLevelNew, ScoreLevel, type ScoreLevelConfigOfScorer, Scorer, type ValueOrProviderFromScorer } from './utils';
 
 type IsOpeningServer = Show<boolean>;
 type Serve = {

@@ -1,7 +1,7 @@
 import { Timer as EasyTimer } from 'easytimer.js';
-import { DeveloperError, ensureNumber, ensureString, isDefined, isPositiveNumber, isString, isUndefined, padStartNumber, verifyIsNonNegativeInteger, verifyIsNumberGreaterThan, verifyIsNumberLessThan, verifyIsPositiveInteger } from '..';
-import { EMPTY_HTML } from '../../consts';
-import type { Callback, Html } from '../../types';
+import { EMPTY_HTML } from '../../../../consts';
+import type { Callback, Html } from '../../../../types';
+import { DeveloperError, ensureNumber, ensureString, isDefined, isPositiveNumber, isString, isUndefined, padStartNumber, verifyIsNonNegativeInteger, verifyIsNumberGreaterThan, verifyIsNumberLessThan, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_UPDATE } from './consts';
 import type { ExternalItem, Id, InternalItem } from './types';
 

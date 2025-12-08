@@ -1,10 +1,12 @@
 import Match, { IS_PERCENTAGE_STAT_ID, RestType, Sport, type MatchConfig } from '..';
 import { EMPTY_HTML } from '../../consts';
 import type { Team } from '../../participant';
-import { DualMetric, StatId, Timer, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn, type TimerId, type TimerItem } from '../../utils';
+import { DualMetric, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
 import { Stage } from '../enums';
+import { StatId } from '../utils';
 import { DECIMALED_MINUTES, DECIMALED_SHOT_CLOCK_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_SHOT_CLOCK_SECONDS, LAST_PART_OF_FIRST_HALF, MAIN_CLOCK_ID, PARTS, SHOT_CLOCK_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
 import type { IsSuccessful, OpeningBallPossessor, Parts, Qty } from './types';
+import { Timer, type TimerId, type TimerItem } from './utils';
 
 export default class BasketballMatch extends Match {
 	constructor(teamOne: Team, teamTwo: Team, onChange: MatchConfig['onChange']) {

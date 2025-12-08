@@ -1,5 +1,5 @@
-import { type AnyParticipant } from '../../participant';
-import type { Html, Index, MapIterable, Show, ValueOrProvider } from '../../types';
+import { type AnyParticipant } from '../../../participant';
+import type { Html, Index, MapIterable, Show, ValueOrProvider } from '../../../types';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL, INTERPOLATION_SUFFIX_ONE, INTERPOLATION_SUFFIX_TWO } from './consts';
 
 export type InterpolationSuffix = typeof INTERPOLATION_SUFFIX_ONE | typeof INTERPOLATION_SUFFIX_TWO;

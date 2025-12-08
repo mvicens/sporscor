@@ -1,10 +1,11 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { Participant, Team } from '../participant';
 import type { ClassName, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, EMPTY_INTERPOLATION_DEFINITION, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, HtmlGenerator, info, isArray, isDefined, isNaN, isString, isUndefined, LABEL_BY_STAT_ID, noop, resolveValueOrProvider, StatId, Stats, upperFirst, verifyIsParticipantRegisteredInDualMetric, warn } from '../utils';
+import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsParticipantRegisteredInDualMetric, warn } from '../utils';
 import { NAME_BY_PARTICIPANT_TYPE } from './consts';
 import { RestType, Stage } from './enums';
 import type { Config, StatsList, Timeouts } from './types';
+import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
 import './css/index.css';
 

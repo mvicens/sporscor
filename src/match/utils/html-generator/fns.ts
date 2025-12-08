@@ -1,5 +1,5 @@
-import { isDefined, isParticipantOne, isString } from '..';
-import { Participant } from '../../participant';
+import { Participant } from '../../../participant';
+import { isDefined, isParticipantOne, isString } from '../../../utils';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_SEPARATOR_SYMBOL, INTERPOLATION_START_SYMBOL, INTERPOLATION_SUFFIX_ONE, INTERPOLATION_SUFFIX_TWO } from './consts';
 import type { Interpolation, InterpolationContent, InterpolationDefinitionKey, InterpolationSuffix } from './types';
 

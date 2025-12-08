@@ -1,8 +1,8 @@
-import { getClassNames, isDefined, resolveValueOrProvider } from '..';
-import { EMPTY_HTML } from '../../consts';
-import type { Sport } from '../../match';
-import type { Participant } from '../../participant';
-import type { ClassName, Html } from '../../types';
+import type { Sport } from '../..';
+import { EMPTY_HTML } from '../../../consts';
+import type { Participant } from '../../../participant';
+import type { ClassName, Html } from '../../../types';
+import { getClassNames, isDefined, resolveValueOrProvider } from '../../../utils';
 import { ID_BY_SPORT, INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
 import { getInterpolation, getInterpolationFromContent } from './fns';
 import type { InterpolationContent, InterpolationDefinition } from './types';

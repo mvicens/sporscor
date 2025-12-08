@@ -1,4 +1,4 @@
-import { Sport } from '../../match/enums'; // TODO: Remove '/enums', that failed importing
+import { Sport } from '../..';
 import type { InterpolationDefinition } from './types';
 
 export const INTERPOLATION_START_SYMBOL = '{{';

@@ -17,29 +17,9 @@ export { isArray, isBoolean, isDefined, isFunction, isNumber, isString, isTruth,
 
 export { getClassNames, getLightedElem } from './html';
 
-import HtmlGenerator from './html-generator';
-export { HtmlGenerator };
-
-export { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, type InterpolationDefinition } from './html-generator';
-
 export { identity, noop, pickRandom, resolveValueOrProvider } from './misc';
 
 export { getNumber, getOrdinal, getPercentage, getRatio, isEvenNumber, isNaN, isOddNumber, padStartNumber } from './numbers';
-
-import Scorer from './scorer';
-export { Scorer };
-
-export { ScoreLevel, SHOULD_INTERRUPT_SCORER_LOOP, type IsHigherScoreLevelNew, type ScoreLevelConfigOfScorer, type ValueOrProviderFromScorer } from './scorer';
-
-import Stats from './stats';
-export { Stats };
-
-export { LABEL_BY_STAT_ID, StatId } from './stats';
-
-import Timer from './timer';
-export { Timer };
-
-export { type TimerId, type TimerItem } from './timer';
 
 export { isNonNegativeInteger, isPositiveInteger, isPositiveNumber } from './validators';
 

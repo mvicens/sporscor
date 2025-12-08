@@ -1,5 +1,5 @@
 import Timer from 'easytimer.js';
-import type { Html, Show } from '../../types';
+import type { Html, Show } from '../../../../types';
 
 type Seconds = Show<number>;
 export type ExternalItem = {

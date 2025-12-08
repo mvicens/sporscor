@@ -1,4 +1,4 @@
-import { ScoreLevel } from '../../utils';
+import { ScoreLevel } from './utils';
 
 export const NAME_BY_SCORE_LEVEL = {
 	[ScoreLevel.Game]: 'game',

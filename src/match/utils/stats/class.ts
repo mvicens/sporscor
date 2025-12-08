@@ -1,9 +1,9 @@
-import { NOT_AVAILABLE_ABBR } from '../../consts';
-import type { Participant } from '../../participant';
-import type { Callback } from '../../types';
-import DualMetric from '../dual-metric';
-import { DeveloperError } from '../errors';
-import { isDefined, isUndefined } from '../guards';
+import { NOT_AVAILABLE_ABBR } from '../../../consts';
+import type { Participant } from '../../../participant';
+import type { Callback } from '../../../types';
+import DualMetric from '../../../utils/dual-metric';
+import { DeveloperError } from '../../../utils/errors';
+import { isDefined, isUndefined } from '../../../utils/guards';
 import type { Id } from './enums';
 import type { Data, Qty, Value } from './types';
 

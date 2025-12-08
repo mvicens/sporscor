@@ -4,9 +4,11 @@ import Match, { RestType } from '..';
 import { EMPTY_HTML } from '../../consts';
 import { Participant } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
-import { assertIsDefined, assertIsNumber, DualMetric, EMPTY_INTERPOLATION_DEFINITION, ensureArray, getClassNames, getInterpolation, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP, StatId, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
+import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
+import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
 import { NAME_BY_SCORE_LEVEL } from './consts';
 import type { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
+import { ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 
 import './css/index.css';
 

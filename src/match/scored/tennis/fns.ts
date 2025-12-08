@@ -1,4 +1,4 @@
-import { ScoreLevel, Scorer } from '../../../utils';
+import { ScoreLevel, Scorer } from '..';
 import { TOTAL_GAMES_WHEN_TIE_BREAK } from './consts';
 
 export const getTotalGames = (scorer: Scorer) => scorer.getBy(ScoreLevel.Game).qty.getTotal();

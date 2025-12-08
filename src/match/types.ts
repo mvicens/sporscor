@@ -1,6 +1,7 @@
 import { Player, Team, type AnyParticipant } from '../participant';
-import { DualMetric, StatId } from '../utils';
+import { DualMetric } from '../utils';
 import type { Sport } from './enums';
+import { StatId } from './utils';
 
 type ConfigTimeouts = {
 	qtyPerPhase: () => number;
