@@ -1,7 +1,3 @@
-.ss-scoreboard thead {
-	display: none;
-}
-
 .ss-serve::after {
 	content: "●";
 }

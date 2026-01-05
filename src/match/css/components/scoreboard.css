@@ -1,3 +1,4 @@
-.ss-scoreboard caption {
+.ss-scoreboard caption,
+.ss-scoreboard thead {
 	display: none;
 }
