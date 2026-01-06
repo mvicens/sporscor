@@ -17,7 +17,7 @@ export enum Stage {
 
 export enum RestType {
 	// Scheduled
-	breakPerPhase, // Set, part...
+	breakPerPhase, // Set, part…
 	breakPerPoint,
 
 	Timeout // Also short

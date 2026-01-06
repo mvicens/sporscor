@@ -1,7 +1,7 @@
 import { CLASS_NAME_BY_ID } from './consts';
 
 export type Show<T> = T & { __show?: never; }; // To force visualization in IDE. So that, e.g.:
-type Something = Show<string>; // With this...
+type Something = Show<string>; // With this…
 const something: Something = ''; something; // "Something" displayed instead "string"
 
 export type Args = Array<any>;

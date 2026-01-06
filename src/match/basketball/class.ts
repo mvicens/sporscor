@@ -374,7 +374,7 @@ export default class BasketballMatch extends Match {
 
 		this.stage = Stage.Preparing;
 
-		info('The quarter is being prepared...');
+		info('The quarter is being prepared…');
 
 		this.dispatchEvent();
 	}

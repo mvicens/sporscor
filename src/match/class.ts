@@ -197,7 +197,7 @@ export default class Match {
 
 		execute();
 		this.stage = Stage.Preparing;
-		info('The match starts being prepared...');
+		info('The match starts being prepared…');
 		this.dispatchEvent();
 	}
 
@@ -262,8 +262,8 @@ export default class Match {
 
 		info(
 			type !== RestType.Timeout
-				? 'The match is at break...'
-				: 'The match is in timeout...'
+				? 'The match is at break…'
+				: 'The match is in timeout…'
 		);
 
 		this.dispatchEvent();
