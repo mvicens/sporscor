@@ -3,10 +3,10 @@ import { Participant, type AnyParticipant } from '../../participant';
 import type { ParticipantNumeral } from './types';
 import { participantsValues } from './vars';
 
-export function verifyIsParticipantRegistered(participant: Participant, withUsualError = false) {
+export function verifyParticipantIsRegistered(value: Participant, withUsualError = false) {
 	assertIsDefined(participantsValues.participantByNumeral);
 	const
-		id = participant.getId(),
+		id = value.getId(),
 		isParticipantRegistered = Object.values(participantsValues.participantByNumeral).some(({ getId }) => {
 			const comparedId = getId();
 			return comparedId === id;
@@ -52,7 +52,7 @@ export function getOpponentBy(participant: AnyParticipant) {
 }
 
 export function isParticipantOne(participant: Participant) {
-	verifyIsParticipantRegistered(participant);
+	verifyParticipantIsRegistered(participant);
 
 	assertIsDefined(participantsValues.participantByNumeral);
 	return participantsValues.participantByNumeral.one.getId() === participant.getId();

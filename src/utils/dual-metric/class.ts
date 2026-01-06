@@ -1,7 +1,7 @@
 import { assertIsDefined, assertIsNumber, DeveloperError, isUndefined, pickRandom } from '..';
 import { Participant } from '../../participant';
 import type { Callback } from '../../types';
-import { getOpponentBy, getParticipantNumeral, setValueOfParticipantNumeralByStateProperty, verifyIsParticipantRegistered } from './fns';
+import { getOpponentBy, getParticipantNumeral, setValueOfParticipantNumeralByStateProperty, verifyParticipantIsRegistered } from './fns';
 import type { NumericValue, ParticipantNumeral, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
 import { participantsValues } from './vars';
 
@@ -42,11 +42,11 @@ export default class DualMetric<T = NumericValue> {
 	#values: ValueByParticipantNumeral<T>;
 
 	getBy(participant: Participant) {
-		verifyIsParticipantRegistered(participant);
+		verifyParticipantIsRegistered(participant);
 		return this.#values[getParticipantNumeral(participant)];
 	}
 	getOpponentBy(participant: Participant) {
-		verifyIsParticipantRegistered(participant);
+		verifyParticipantIsRegistered(participant);
 		return this.getBy(getOpponentBy(participant));
 	}
 
@@ -117,7 +117,7 @@ export default class DualMetric<T = NumericValue> {
 	}
 
 	#setBy(participant: Participant, value: T) {
-		verifyIsParticipantRegistered(participant);
+		verifyParticipantIsRegistered(participant);
 		this.#values[getParticipantNumeral(participant)] = value;
 	}
 
@@ -147,7 +147,7 @@ export default class DualMetric<T = NumericValue> {
 	// }
 
 	#resetBy(participant: Participant) {
-		verifyIsParticipantRegistered(participant);
+		verifyParticipantIsRegistered(participant);
 		this.#setBy(participant, this.#initialValues[getParticipantNumeral(participant)]);
 	}
 	#reset() {

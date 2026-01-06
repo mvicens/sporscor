@@ -13,7 +13,7 @@ import { ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 import './css/index.css';
 
 export default class ScoredMatch extends Match {
-	#verify(config: Config) {
+	private verifyConfigIsOk(config: Config) {
 		config.scoreLevelsConfig.forEach(item => {
 			if (!isNumber(item))
 				return;
@@ -27,7 +27,7 @@ export default class ScoredMatch extends Match {
 	constructor(private ownConfig: Config) {
 		super(ownConfig);
 
-		this.#verify(ownConfig);
+		this.verifyConfigIsOk(ownConfig);
 
 		const scoreLevelsConfig = ownConfig.scoreLevelsConfig.map(item => {
 			if (!isNumber(item))
@@ -275,25 +275,25 @@ export default class ScoredMatch extends Match {
 		this.getClassName()
 	);
 
-	private verifyIsOpeningServerAssigned() {
+	private verifyOpeningServerIsAssigned() {
 		if (isDefined(this.openingServer))
 			throw new Error('The match already has an opening server');
 	}
 	public grantOpeningServeTo(participant: Participant) {
-		this.verifyIsParticipantRegistered(participant);
+		this.verifyParticipantIsRegistered(participant);
 		this.verifyIsPreparing();
 
 		if (participant === this.openingServer)
 			warn(`${upperFirst(participant.getName())} is already the opening server`);
 		else {
-			this.verifyIsOpeningServerAssigned();
+			this.verifyOpeningServerIsAssigned();
 
 			this.openingServer = participant;
 			this.dispatchEvent();
 		}
 	}
 
-	private verifyIsOpeningServerRequired() {
+	private verifyOpeningServerIsRequired() {
 		if (isUndefined(this.openingServer))
 			throw new Error('An opening server is required');
 	}
@@ -307,7 +307,7 @@ export default class ScoredMatch extends Match {
 			noop,
 			() => {
 				this.verifyIsInactive(); // Default verification
-				this.verifyIsOpeningServerRequired();
+				this.verifyOpeningServerIsRequired();
 			}
 		);
 	}
@@ -358,7 +358,7 @@ export default class ScoredMatch extends Match {
 		executeWithServeInfo: ExecuteWithServeInfo = noop, // Before participant focus
 		executeAtLast = noop // Focusing p., after scorer increment and before event dispatching
 	) {
-		this.verifyIsParticipantRegistered(participant);
+		this.verifyParticipantIsRegistered(participant);
 		this.verifyIsPlaying();
 
 		this.stats.increase(StatId.TotalPoints, participant);

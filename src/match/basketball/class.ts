@@ -141,7 +141,7 @@ export default class BasketballMatch extends Match {
 		super.start(() => { this.timer.resetAll(); });
 	}
 
-	private verifyIsOpeningBallPossessorOk(value?: OpeningBallPossessor) {
+	private verifyOpeningBallPossessorIsOk(value?: OpeningBallPossessor) {
 		const hasValue = isDefined(value);
 		if (!this.wasPlayed) {
 			if (!hasValue)
@@ -160,14 +160,14 @@ export default class BasketballMatch extends Match {
 			},
 			() => {
 				if (hasOpeningBallPossessor)
-					this.verifyIsParticipantRegistered(openingBallPossessor);
+					this.verifyParticipantIsRegistered(openingBallPossessor);
 			},
 			() => {
 				if (hasOpeningBallPossessor)
 					this.verifyIsPreparing();
 				else
 					this.verifyIsInTimeoutOrPreparing();
-				this.verifyIsOpeningBallPossessorOk(openingBallPossessor);
+				this.verifyOpeningBallPossessorIsOk(openingBallPossessor);
 			}
 		);
 	}
@@ -193,7 +193,7 @@ export default class BasketballMatch extends Match {
 			throw new Error('Cannot change ball possession');
 	}
 	public logBallPossessionOf(team: Team) {
-		this.verifyIsParticipantRegistered(team);
+		this.verifyParticipantIsRegistered(team);
 		this.verifyIsPlaying();
 		this.verifyCanChangeBallPossession();
 
@@ -277,7 +277,7 @@ export default class BasketballMatch extends Match {
 	}
 
 	private wasOutOfTimeFieldBasketAttempted = false;
-	private verifyIsAttemptedOutOfTimeFieldBasketUnique() {
+	private verifyAttemptedOutOfTimeFieldBasketIsUnique() {
 		if (this.wasOutOfTimeFieldBasketAttempted)
 			throw new Error('The attempted out-of-time field basket is not unique');
 	}
@@ -288,7 +288,7 @@ export default class BasketballMatch extends Match {
 			statIdMade,
 			isSuccessful,
 			() => {
-				this.verifyIsAttemptedOutOfTimeFieldBasketUnique();
+				this.verifyAttemptedOutOfTimeFieldBasketIsUnique();
 				this.verifyIsNotInFreeThrowsSituation();
 			},
 			() => {

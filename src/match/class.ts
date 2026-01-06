@@ -1,7 +1,7 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { Participant, Team } from '../participant';
 import type { ClassName, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsParticipantRegisteredInDualMetric, warn } from '../utils';
+import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
 import { NAME_BY_PARTICIPANT_TYPE } from './consts';
 import { RestType, Stage } from './enums';
 import type { Config, StatsList, Timeouts } from './types';
@@ -10,14 +10,14 @@ import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId
 import './css/index.css';
 
 export default class Match {
-	#verify(participantOne: Participant, participantTwo: Participant) {
-		if (participantOne.getId() === participantTwo.getId())
+	private verifyEachParticipantIsUnique(valueOfOne: Participant, valueOfTwo: Participant) {
+		if (valueOfOne.getId() === valueOfTwo.getId())
 			throw new Error('Both participants are the same one');
 	}
 	constructor(private config: Config) {
 		const [participantOne, participantTwo] = config.participants;
 
-		this.#verify(participantOne, participantTwo);
+		this.verifyEachParticipantIsUnique(participantOne, participantTwo);
 
 		DualMetric.setParticipants(participantOne, participantTwo);
 
@@ -163,7 +163,7 @@ export default class Match {
 		return this.getRootHtml(html, ['stats', className]);
 	}
 
-	protected verifyIsParticipantRegistered(participant: Participant) { verifyIsParticipantRegisteredInDualMetric(participant, true); }
+	protected verifyParticipantIsRegistered(value: Participant) { verifyParticipantIsRegisteredInDualMetric(value, true); }
 
 	private verifyIsUnstarted() {
 		if (!this.isUnstarted())
@@ -225,29 +225,29 @@ export default class Match {
 		if (isDefined(this.timeouts))
 			this.timeouts.doneQty.resetAll();
 	}
-	private assertIsTimeoutsHandleable<T>(value: T): asserts value is NonNullable<T> {
+	private assertCanHandleTimeouts<T>(value: T): asserts value is NonNullable<T> {
 		const canHandleTimeouts = isDefined(value);
 		if (!canHandleTimeouts)
 			throw new DeveloperError('Cannot handle timeouts');
 	}
-	private verifyIsTimeoutDoneable(team: Team) {
+	private verifyTimeoutIsDoneable(team: Team) {
 		if (!this.timeouts?.isDoneable(team))
 			throw new Error('The timeout is not doneable');
 	}
-	private verifyIsAllTimeoutsDone(team: Team) {
+	private verifyAllTimeoutsAreNotDone(team: Team) {
 		const
 			{ timeouts } = this,
 			isAllDone = timeouts?.doneQty.getBy(team) === timeouts?.qtyPerPhase();
 		if (isAllDone)
-			throw new Error(`${upperFirst(team.getName())} already done all the timeouts`);
+			throw new Error(`${upperFirst(team.getName())} already did all the timeouts`);
 	}
 	public grantTimeoutTo(team: Team) {
-		this.assertIsTimeoutsHandleable(this.timeouts);
+		this.assertCanHandleTimeouts(this.timeouts);
 
-		this.verifyIsParticipantRegistered(team);
+		this.verifyParticipantIsRegistered(team);
 		this.verifyIsPlaying();
-		this.verifyIsTimeoutDoneable(team);
-		this.verifyIsAllTimeoutsDone(team);
+		this.verifyTimeoutIsDoneable(team);
+		this.verifyAllTimeoutsAreNotDone(team);
 
 		DualMetric.setFocusedParticipant(team);
 		this.timeouts.doneQty.increment();

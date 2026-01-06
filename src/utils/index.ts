@@ -7,7 +7,7 @@ export { info, log, warn } from './console';
 import DualMetric from './dual-metric';
 export { DualMetric };
 
-export { getOpponentBy, isParticipantOne, verifyIsParticipantRegisteredInDualMetric } from './dual-metric';
+export { getOpponentBy, isParticipantOne, verifyParticipantIsRegisteredInDualMetric } from './dual-metric';
 
 export { ensureArray, ensureNumber, ensureString } from './ensures';
 

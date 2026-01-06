@@ -22,5 +22,5 @@ export function assertIsArray(value: unknown): asserts value is Array<unknown> {
 
 // export function assertIsInstanceOf<T>(value: unknown, targetClass: Class<T>): asserts value is T {
 // 	if (!(value instanceof targetClass))
-// 		throw new TypeError(`Expected an instance of ${targetClass.name}, but received: ${value?.constructor.name ?? typeof value}`);
+// 		throw new DeveloperTypeError(`Expected an instance of ${targetClass.name}, but received: ${value?.constructor.name ?? typeof value}`);
 // }
