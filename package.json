@@ -1,8 +1,16 @@
 {
   "name": "sporscor",
   "version": "1.0.0",
-  "description": "TypeScript API to manage scoreboard and statistics of sports",
-  "main": "src/index.ts",
+  "description": "API to manage scoreboard and statistics of sports",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mvicens/sporscor.git"
@@ -19,5 +27,8 @@
   "dependencies": {
     "easytimer.js": "^4.6.0",
     "pluralize": "^8.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }
