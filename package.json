@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "copy-css": "cpx src/**/*.css dist/",
+    "copy-css": "cpx \"src/**/*.css\" dist/",
     "build": "tsc && npm run copy-css",
     "prepublishOnly": "npm run build"
   },
