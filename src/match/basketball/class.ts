@@ -172,6 +172,8 @@ export default class BasketballMatch extends Match {
 		);
 	}
 
+	public grantTimeoutTo(team: Team) { super.grantTimeoutTo(team); }
+
 	private hasBallPossession = new DualMetric(false);
 	private switchBallPossession() {
 		this.hasBallPossession.swap();

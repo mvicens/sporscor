@@ -100,6 +100,8 @@ export default class VolleyballMatch extends ScoredMatch {
 		super.play(undefined, () => { this.isSomePointDone = false; });
 	}
 
+	public grantTimeoutTo(team: Team) { super.grantTimeoutTo(team); }
+
 	public logPointWonBy(team: Team) {
 		super.logPointWonBy(
 			team,

@@ -192,7 +192,7 @@ export default class Match {
 
 	protected dispatchEvent() { this.config.onChange(); }
 
-	public start(execute = noop) {
+	protected start(execute = noop) {
 		this.verifyIsUnstarted();
 
 		execute();
@@ -241,7 +241,7 @@ export default class Match {
 		if (isAllDone)
 			throw new Error(`${upperFirst(team.getName())} already did all the timeouts`);
 	}
-	public grantTimeoutTo(team: Team) {
+	protected grantTimeoutTo(team: Team) {
 		this.assertCanHandleTimeouts(this.timeouts);
 
 		this.verifyParticipantIsRegistered(team);

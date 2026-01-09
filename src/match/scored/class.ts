@@ -275,6 +275,8 @@ export default class ScoredMatch extends Match {
 		this.getClassName()
 	);
 
+	public start() { super.start(); }
+
 	private verifyOpeningServerIsAssigned() {
 		if (isDefined(this.openingServer))
 			throw new Error('The match already has an opening server');
