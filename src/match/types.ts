@@ -1,11 +1,11 @@
-import { Player, Team, type AnyParticipant } from '../participant';
+import { Player, Team } from '../participant';
 import { DualMetric } from '../utils';
 import type { Sport } from './enums';
 import { StatId } from './utils';
 
 type ConfigTimeouts = {
 	qtyPerPhase: () => number;
-	isDoneable: (participant: AnyParticipant) => boolean;
+	isDoneable: () => boolean;
 };
 
 type Participants = [playerOne: Player, playerTwo: Player] | [teamOne: Team, teamTwo: Team]; // If dual metric, it fails

@@ -16,7 +16,7 @@ export default class BasketballMatch extends Match {
 			onChange,
 			timeouts: {
 				qtyPerPhase: () => this.parts.current <= LAST_PART_OF_FIRST_HALF ? TIMEOUTS_PER_FIRST_HALF : TIMEOUTS_PER_SECOND_HALF,
-				isDoneable: team => this.isPaused() && this.hasBallPossession.getBy(team)
+				isDoneable: () => this.isPaused()
 			}
 		});
 

@@ -230,8 +230,8 @@ export default class Match {
 		if (!canHandleTimeouts)
 			throw new DeveloperError('Cannot handle timeouts');
 	}
-	private verifyTimeoutIsDoneable(team: Team) {
-		if (!this.timeouts?.isDoneable(team))
+	private verifyTimeoutIsDoneable() {
+		if (!this.timeouts?.isDoneable())
 			throw new Error('The timeout is not doneable');
 	}
 	private verifyAllTimeoutsAreNotDone(team: Team) {
@@ -246,7 +246,7 @@ export default class Match {
 
 		this.verifyParticipantIsRegistered(team);
 		this.verifyIsPlaying();
-		this.verifyTimeoutIsDoneable(team);
+		this.verifyTimeoutIsDoneable();
 		this.verifyAllTimeoutsAreNotDone(team);
 
 		DualMetric.setFocusedParticipant(team);
