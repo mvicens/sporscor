@@ -94,6 +94,39 @@ export default class VolleyballMatch extends ScoredMatch {
 		[StatId.SideOut, StatId.TotalReceptionPoints, IS_PERCENTAGE_STAT_ID]
 	]);
 
+	public getPanel() {
+		const
+			teamOne = this.participant.getOfOne(),
+			teamTwo = this.participant.getOfTwo();
+		return this.getUltimatePanel([
+			[
+				['Start', () => { this.start(); }]
+			],
+			[
+				['Grant opening serve to team 1', () => { this.grantOpeningServeTo(teamOne); }],
+				['Grant opening serve to team 2', () => { this.grantOpeningServeTo(teamTwo); }]
+			],
+			[
+				['Play', () => { this.play(); }]
+			],
+			[
+				['Grant timeout to team 1', () => { this.grantTimeoutTo(teamOne as Team); }],
+				['Grant timeout to team 2', () => { this.grantTimeoutTo(teamTwo as Team); }]
+			],
+			[
+				['Log serve as fault', () => { this.logServeAsFault(); }],
+				['Log serve as ace', () => { this.logServeAsAce(); }]
+			],
+			[
+				['Log point as let', () => { this.logPointAsLet(); }]
+			],
+			[
+				['Log point won by team 1', () => { this.logPointWonBy(teamOne as Team); }],
+				['Log point won by team 2', () => { this.logPointWonBy(teamTwo as Team); }]
+			]
+		]);
+	}
+
 	private isSomePointDone = false; // Since inactivity
 
 	public play() {

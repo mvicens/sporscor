@@ -4,7 +4,7 @@ import type { ClassName, Html, TableHeaderScope } from '../types';
 import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
 import { NAME_BY_PARTICIPANT_TYPE } from './consts';
 import { RestType, Stage } from './enums';
-import type { Config, StatsList, Timeouts } from './types';
+import type { Config, PanelAction, PanelDefinition, PanelElement, StatsList, Timeouts } from './types';
 import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
 import './css/index.css';
@@ -161,6 +161,47 @@ export default class Match {
 				</table>`
 			);
 		return this.getRootHtml(html, ['stats', className]);
+	}
+
+	private panelElement?: PanelElement;
+	protected getUltimatePanel(definition: PanelDefinition) {
+		const value = this.panelElement;
+		if (isDefined(value))
+			return value;
+
+		const methods: Array<PanelAction> = [];
+
+		let html: Html = definition
+			.map(item => {
+				const html: Html = item
+					.map(([text, method]) => {
+						methods.push(method);
+						return `<button>${upperFirst(text)}</button>`;
+					})
+					.join('');
+				return `<div>${html}</div>`;
+			})
+			.join('\n');
+		html = (
+			`<div>
+				<h1>Panel</h1>
+				${html}
+			</div>`
+		);
+		html = this.getRootHtml(html, ['panel']);
+
+		const
+			domParser = new DOMParser(),
+			document = domParser.parseFromString(html, 'text/html'),
+			result = document.body.firstElementChild;
+
+		assertIsDefined(result);
+		methods.forEach((item, i) => {
+			result.getElementsByTagName('button')[i].addEventListener('click', () => { item(); });
+		});
+
+		this.panelElement = result;
+		return result;
 	}
 
 	protected verifyParticipantIsRegistered(value: Participant) { verifyParticipantIsRegisteredInDualMetric(value, true); }

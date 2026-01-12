@@ -115,6 +115,51 @@ export default class BasketballMatch extends Match {
 		[StatId.FreeThrowsMade, StatId.FreeThrowsAttempted, IS_PERCENTAGE_STAT_ID],
 	]);
 
+	public getPanel() {
+		const
+			teamOne = this.participant.getOfOne(),
+			teamTwo = this.participant.getOfTwo();
+		return this.getUltimatePanel([
+			[
+				['Start', () => { this.start(); }]
+			],
+			[
+				['Play with team 1 as opening ball possessor', () => { this.play(teamOne as Team); }],
+				['Play with team 2 as opening ball possessor', () => { this.play(teamTwo as Team); }]
+			],
+			[
+				['Grant timeout to team 1', () => { this.grantTimeoutTo(teamOne as Team); }],
+				['Grant timeout to team 2', () => { this.grantTimeoutTo(teamTwo as Team); }]
+			],
+			[
+				['Play', () => { this.play(); }]
+			],
+			[
+				['Log ball possession of team 1', () => { this.logBallPossessionOf(teamOne as Team); }],
+				['Log ball possession of team 2', () => { this.logBallPossessionOf(teamTwo as Team); }]
+			],
+			[
+				['Pause', () => { this.pause(); }],
+				['Resume', () => { this.resume(); }]
+			],
+			[
+				['Log two-pointer failed', () => { this.logTwoPointerFailed(); }],
+				['Log two-pointer made', () => { this.logTwoPointerMade(); }]
+			],
+			[
+				['Log three-pointer failed', () => { this.logThreePointerFailed(); }],
+				['Log three-pointer made', () => { this.logThreePointerMade(); }]
+			],
+			[
+				['Log free throw failed', () => { this.logFreeThrowFailed(); }],
+				['Log free throw made', () => { this.logFreeThrowMade(); }]
+			],
+			[
+				['Prepare', () => { this.prepare(); }]
+			]
+		]);
+	}
+
 	private verifyIsPlayingOrAtRest() {
 		if (!this.isPlaying() && !this.isAtRest())
 			throw new Error('The match is not being playing nor is at rest');

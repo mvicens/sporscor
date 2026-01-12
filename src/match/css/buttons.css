@@ -1,0 +1,12 @@
+.ss-root button {
+	color: var(--ss-bg);
+	background-color: var(--ss-fg);
+	padding: .3em .5em;
+	border: 1px outset;
+	border-radius: .3em;
+	cursor: pointer;
+}
+
+.ss-root button:active {
+	border-style: inset;
+}

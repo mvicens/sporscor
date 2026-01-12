@@ -12,6 +12,7 @@ export const CLASS_NAME_BY_ID = {
 	labelLeft: 'label-left',
 	labelRight: 'label-right',
 	lowlight: 'lowlight',
+	panel: 'panel',
 	root: 'root',
 	scoreboard: 'scoreboard',
 	serve: 'serve',

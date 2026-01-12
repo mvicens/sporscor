@@ -17,7 +17,8 @@
 	/* And any inherit that is used */
 }
 
-/* .ss-root div, */
+.ss-root div,
+.ss-root h1,
 /* And rest of block-level elements */
 div.ss-root {
 	display: block;
@@ -41,6 +42,10 @@ div.ss-root {
 .ss-root th,
 .ss-root td {
 	display: table-cell;
+}
+
+.ss-root button {
+	display: inline-block;
 }
 
 .ss-root sup {

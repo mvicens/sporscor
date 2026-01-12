@@ -1,0 +1,17 @@
+.ss-panel > div {
+	display: inline-block;
+	text-align: center;
+	background-color: var(--ss-bg);
+	padding: .5em;
+	border: 1px solid;
+	border-radius: 1em;
+}
+
+.ss-panel h1 {
+	font-size: 1.5em;
+	display: none;
+}
+
+.ss-panel button {
+	margin: .5em;
+}
