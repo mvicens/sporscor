@@ -7,6 +7,10 @@ Implemented sport matches (for now):
 - Tennis (only players, not pairs)
 - Volleyball
 
+## Demo
+
+[Here](https://mvicens.github.io/sporscor/) you have to try it out.
+
 ## Get started
 
 ```sh
