@@ -1,6 +1,6 @@
 {
   "name": "sporscor",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "API to manage scoreboard and statistics of sports",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
