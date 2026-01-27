@@ -1,0 +1,10 @@
+@import url('bootstrap/dist/css/bootstrap.css');
+
+:root {
+	--ss-color-dark: var(--bs-dark);
+	--ss-color-light: var(--bs-light);
+}
+
+.ss-root {
+	font-size: 1em;
+}

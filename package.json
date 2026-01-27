@@ -8,6 +8,8 @@
     "dist"
   ],
   "scripts": {
+    "demo-dev": "cd demo/ && npm run dev",
+    "demo-deploy": "cd demo/ && npm run deploy",
     "copy-css": "cpx \"src/**/*.css\" dist/",
     "build": "tsc && npm run copy-css",
     "prepublishOnly": "npm run build"
