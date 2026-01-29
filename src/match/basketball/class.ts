@@ -21,7 +21,10 @@ export default class BasketballMatch extends Match {
 		});
 
 		const
-			onTimerChange = () => { this.dispatchEvent(); },
+			onTimerChange = () => {
+				if (this.isStarted())
+					this.dispatchEvent();
+			},
 			items: Array<TimerItem> = [
 				{
 					id: MAIN_CLOCK_ID,
