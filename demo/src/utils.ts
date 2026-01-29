@@ -1,5 +1,6 @@
 import { Player, Team, TennisMatch } from '../../src';
 import { SPORTS } from './consts';
+import { currentInstance } from './values';
 
 function getHtmlElement<T extends HTMLElement>(selectors: string) {
 	const value = document.querySelector<T>(selectors);
@@ -44,6 +45,9 @@ export function buildSelection() {
 
 	let instance: InstanceType<typeof Class>;
 	const onChange = () => {
+		if (currentInstance.value !== instance)
+			return;
+
 		setHtmlContent('#scoreboard', instance.getScoreboard());
 		setHtmlContent('#stats', instance.getStats());
 	};
@@ -59,6 +63,8 @@ export function buildSelection() {
 		instance = new Class(teamOne, teamTwo, onChange);
 	}
 	getHtmlElement('#panel').append(instance.getPanel());
+
+	currentInstance.value = instance;
 }
 
 const isDefined = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;
