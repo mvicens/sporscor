@@ -9,7 +9,8 @@ type Serve = {
 	getServer: (scorer: Scorer) => Participant | IsOpeningServer;
 };
 
-export type OnNewByScoreLevel = EventListenersBy<ScoreLevel, [Scorer, IsHigherScoreLevelNew]>; // Technically named "EventListenersByScoreLevel"
+export type OnNewByScoreLevel = // Technically named "EventListenersByScoreLevel"
+	EventListenersBy<ScoreLevel, [Scorer, IsHigherScoreLevelNew]>;
 
 type ScoreLevelsConfig = Array<ScoreLevelConfigOfScorer>;
 type TotalOfSets = Show<number>;

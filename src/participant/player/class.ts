@@ -6,5 +6,5 @@ export default class Player extends Participant {
 
 		this._;
 	}
-	private _ = null; // To diff from "Team"
+	private _ = null; // In order to diff from "Team"
 }

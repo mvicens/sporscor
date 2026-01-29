@@ -40,7 +40,7 @@ export default class Timer {
 		});
 		this.#items = internalItems;
 
-		this.#forEach((item) => {
+		this.#forEach(item => {
 			const
 				{ onChange, value } = item,
 				update = () => {
@@ -62,7 +62,7 @@ export default class Timer {
 				}
 				if (shouldShowDecimal) {
 					update();
-					item.shouldShowDecimal = true; // After in order to avoid show decimal immediately when integer
+					item.shouldShowDecimal = true; // Located after in order to avoid show decimal immediately when integer
 				} else {
 					const
 						{ secondTenths } = value.getTimeValues(),

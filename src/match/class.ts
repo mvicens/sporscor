@@ -244,7 +244,7 @@ export default class Match {
 
 	protected wasPlayed = false;
 	protected play(
-		_?: Participant, // To successfully overwrite method
+		_?: Participant, // In order to could overwrite method
 		execute = noop,
 		verifyBefore = noop,
 		verifyAfter = () => { this.verifyIsInactive(); }

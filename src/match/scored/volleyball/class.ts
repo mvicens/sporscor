@@ -127,7 +127,8 @@ export default class VolleyballMatch extends ScoredMatch {
 		]);
 	}
 
-	private isSomePointDone = false; // Since inactivity
+	private isSomePointDone = // Since inactivity
+		false;
 
 	public play() {
 		super.play(undefined, () => { this.isSomePointDone = false; });

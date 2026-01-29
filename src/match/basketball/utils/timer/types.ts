@@ -16,7 +16,7 @@ export type InternalItem =
 	& ExternalItem
 	& {
 		value: Timer;
-		time: ShouldUpdate | ShouldNotUpdate; // To avoid interference from other timers
+		time: ShouldUpdate | ShouldNotUpdate; // In order to avoid interference from other timers
 		shouldShowDecimal: boolean;
 		isFinished: boolean;
 	};

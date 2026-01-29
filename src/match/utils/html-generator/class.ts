@@ -3,7 +3,7 @@ import { EMPTY_HTML } from '../../../consts';
 import type { Participant } from '../../../participant';
 import type { ClassName, Html } from '../../../types';
 import { getClassNames, isDefined, resolveValueOrProvider } from '../../../utils';
-import { ID_BY_SPORT, INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
+import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
 import { getInterpolation, getInterpolationFromContent } from './fns';
 import type { InterpolationContent, InterpolationDefinition } from './types';
 
@@ -57,9 +57,8 @@ export default class HtmlGenerator {
 			this.#classNames.push('hidden');
 		}
 
-		const id = ID_BY_SPORT[this.#sport];
 		html = (
-			`<div data-ss-sport="${id}" class="${getClassNames('root', ...this.#classNames)}">
+			`<div data-ss-sport="${this.#sport}" class="${getClassNames('root', ...this.#classNames)}">
 				${html}
 			</div>`
 		);

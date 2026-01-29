@@ -1,7 +1,7 @@
 export enum Sport {
-	Basketball,
-	Tennis,
-	Volleyball
+	Basketball = 'basketball',
+	Tennis = 'tennis',
+	Volleyball = 'volleyball'
 }
 
 export enum Stage {
@@ -20,5 +20,5 @@ export enum RestType {
 	breakPerPhase, // Set, part…
 	breakPerPoint,
 
-	Timeout // Also short
+	Timeout
 }

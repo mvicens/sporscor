@@ -75,7 +75,7 @@ export default class ScoredMatch extends Match {
 
 	private getServer() {
 		if (isUndefined(this.openingServer))
-			return undefined;
+			return;
 
 		const participantOrIsOpeningServer = this.ownConfig.serve.getServer(this.scorer);
 

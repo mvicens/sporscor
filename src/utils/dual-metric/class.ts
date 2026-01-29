@@ -15,7 +15,7 @@ export default class DualMetric<T = NumericValue> {
 			two: participantTwo
 		};
 
-		// To avoid errors at the beginnings when a property of undefined "participantNumeralByState" is accessed
+		// In order to avoid errors at the beginnings when a property of undefined "participantNumeralByState" is accessed
 		if (isUndefined(participantsValues.participantNumeralByState)) {
 			const focusedParticipantNumeral = pickRandom('one', 'two');
 			setValueOfParticipantNumeralByStateProperty(focusedParticipantNumeral);

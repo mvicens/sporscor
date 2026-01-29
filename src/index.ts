@@ -8,7 +8,7 @@ export {
 	Player,
 	Team,
 
-	// Sport matches
+	// Matches
 	BasketballMatch,
 	TennisMatch,
 	VolleyballMatch
