@@ -6,7 +6,6 @@ import { Participant } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
-import { NAME_BY_SCORE_LEVEL } from './consts';
 import type { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
 import { ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 
@@ -114,9 +113,7 @@ export default class ScoredMatch extends Match {
 			if (this.isFinished() && !isScoreLevelOfSet)
 				return SHOULD_INTERRUPT_SCORER_LOOP;
 
-			const
-				{ target } = dataItem,
-				name = NAME_BY_SCORE_LEVEL[scoreLevel];
+			const { target } = dataItem;
 			function getQty(qty: DualMetric, isOpponent = false) {
 				if (isUndefined(participant))
 					return NaN;
@@ -147,7 +144,7 @@ export default class ScoredMatch extends Match {
 					scoreLevel: {
 						scoreLevel,
 						target,
-						name: pluralize(name),
+						name: pluralize(scoreLevel),
 						isConcluded
 					},
 					values: getValues(dataItem.qty)
@@ -163,7 +160,7 @@ export default class ScoredMatch extends Match {
 						scoreLevel: {
 							scoreLevel,
 							target,
-							name: `${getOrdinal(i + 1)} ${name}`,
+							name: `${getOrdinal(i + 1)} ${scoreLevel}`,
 							index: i,
 							isConcluded: true
 						},

@@ -118,35 +118,30 @@ export default class TennisMatch extends ScoredMatch {
 		[StatId.SecondServePointsWon, StatId.SecondServesIn, IS_PERCENTAGE_STAT_ID]
 	]);
 
-	public getPanel() {
-		const
-			playerOne = this.participant.getOfOne(),
-			playerTwo = this.participant.getOfTwo();
-		return this.getUltimatePanel([
-			[
-				['Start', () => { this.start(); }]
-			],
-			[
-				['Grant opening serve to player 1', () => { this.grantOpeningServeTo(playerOne); }],
-				['Grant opening serve to player 2', () => { this.grantOpeningServeTo(playerTwo); }]
-			],
-			[
-				['Play', () => { this.play(); }]
-			],
-			[
-				['Log serve as let', () => { this.logServeAsLet(); }],
-				['Log serve as fault', () => { this.logServeAsFault(); }],
-				['Log serve as ace', () => { this.logServeAsAce(); }]
-			],
-			[
-				['Log point as let', () => { this.logPointAsLet(); }]
-			],
-			[
-				['Log point won by player 1', () => { this.logPointWonBy(playerOne as Player); }],
-				['Log point won by player 2', () => { this.logPointWonBy(playerTwo as Player); }]
-			]
-		]);
-	}
+	public getPanel = () => this.getUltimatePanel(this, [
+		[
+			['Start', 'start']
+		],
+		[
+			['Grant opening serve to player 1', 'grantOpeningServeTo', true],
+			['Grant opening serve to player 2', 'grantOpeningServeTo', false]
+		],
+		[
+			['Play', 'play']
+		],
+		[
+			['Log serve as let', 'logServeAsLet'],
+			['Log serve as fault', 'logServeAsFault'],
+			['Log serve as ace', 'logServeAsAce']
+		],
+		[
+			['Log point as let', 'logPointAsLet']
+		],
+		[
+			['Log point won by player 1', 'logPointWonBy', true],
+			['Log point won by player 2', 'logPointWonBy', false]
+		]
+	]);
 
 	public play() { super.play(); }
 

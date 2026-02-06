@@ -1,4 +1,4 @@
 export enum Type {
-	Player,
-	Team
+	Player = 'player',
+	Team = 'team'
 }

@@ -15,14 +15,14 @@ export type OnFinish = VoidFunction;
 
 export type IsHigherScoreLevelNew = Show<boolean>;
 
-type DataItem =
+export type DataItem =
 	& Required<ScoreLevelConfig>
 	& {
 		qty: DualMetric;
 		detailedQty: Array<DualMetric>;
 	};
 
-export type Data = Array<DataItem>;
+export type Data = Map<ScoreLevel, DataItem>;
 
 export type NestedPointsItem = Array<NestedPointsItem> | DualMetric;
 export type NestedPoints = Array<NestedPointsItem>;

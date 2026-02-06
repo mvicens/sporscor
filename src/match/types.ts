@@ -31,6 +31,7 @@ export type StatsList = Array<AbsoluteValue | Ratio | Percentage>;
 export type PanelElement = Element; // Cache
 
 type Text = Show<string>;
-export type PanelAction = Function;
-type Btns = Array<[Text, PanelAction]>;
+export type MethodName = Show<string>;
+export type WithParticipantOne = Show<boolean>;
+type Btns = Array<[Text, MethodName, WithParticipantOne?]>;
 export type PanelDefinition = Array<Btns>;

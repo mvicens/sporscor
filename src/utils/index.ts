@@ -17,7 +17,7 @@ export { isArray, isBoolean, isDefined, isFunction, isNumber, isString, isTruth,
 
 export { getClassNames, getLightedElem } from './html';
 
-export { identity, noop, pickRandom, resolveValueOrProvider } from './misc';
+export { identity, isMemberOf, noop, pickRandom, resolveValueOrProvider } from './misc';
 
 export { getNumber, getOrdinal, getPercentage, getRatio, isEvenNumber, isNaN, isOddNumber, padStartNumber } from './numbers';
 

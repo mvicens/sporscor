@@ -1,21 +1,25 @@
-import type { Index } from '../../../../types';
+import type { Index, MapIterable } from '../../../../types';
 import { assertIsArray, assertIsDefined, DeveloperError, DualMetric, ensureArray, identity, isArray, isDefined, isUndefined, resolveValueOrProvider } from '../../../../utils';
 import type { OnNewByScoreLevel } from '../../types';
 import { SHOULD_CONTINUE, SHOULD_INTERRUPT } from './consts';
 import { ScoreLevel } from './enums';
-import type { Data, IsHigherScoreLevelNew, LoopCb, NestedPoints, NestedPointsItem, OnFinish, ScoreLevelConfig } from './types';
+import type { Data, DataItem, IsHigherScoreLevelNew, LoopCb, NestedPoints, NestedPointsItem, OnFinish, ScoreLevelConfig } from './types';
 
 export default class Scorer {
 	constructor(scoreLevelsConfig: Array<ScoreLevelConfig>, onFinish: OnFinish, onNewByScoreLevel: OnNewByScoreLevel) {
 		if (scoreLevelsConfig.at(0)?.scoreLevel !== ScoreLevel.Point)
 			throw new DeveloperError('1st score level must be point\'s');
 
-		this.#data = scoreLevelsConfig.map(item => ({
-			...item,
-			transformer: item.transformer ?? identity,
-			qty: new DualMetric(0),
-			detailedQty: []
-		}));
+		const data: MapIterable<ScoreLevel, DataItem> = scoreLevelsConfig.map(item => [
+			item.scoreLevel,
+			{
+				...item,
+				transformer: item.transformer ?? identity,
+				qty: new DualMetric(0),
+				detailedQty: []
+			}
+		]);
+		this.#data = new Map(data);
 
 		this.#onFinish = onFinish;
 
@@ -30,7 +34,7 @@ export default class Scorer {
 
 	#onNewByScoreLevel: OnNewByScoreLevel;
 
-	#isWon(item: Data[number]) {
+	#isWon(item: DataItem) {
 		const { qty } = item;
 
 		const target = resolveValueOrProvider(item.target, this);
@@ -56,7 +60,7 @@ export default class Scorer {
 	}
 
 	getBy(scoreLevel: ScoreLevel) {
-		const item = this.#data.find(({ scoreLevel: comparedScoreLevel }) => comparedScoreLevel === scoreLevel);
+		const item = this.#data.get(scoreLevel);
 		assertIsDefined(item);
 		return item;
 	}
@@ -77,7 +81,7 @@ export default class Scorer {
 	}
 
 	#incrementPoint() {
-		let previousQty: Data[number]['detailedQty'][number];
+		let previousQty: DataItem['detailedQty'][number];
 		this.forEach(item => {
 			if (isDefined(previousQty))
 				item.detailedQty.push(previousQty);
@@ -141,11 +145,13 @@ export default class Scorer {
 			);
 	}
 
-	#forEachBy(data: Data, cb: LoopCb) {
-		for (let index in data) {
-			const
-				item = data[index],
-				shouldInterrupt = cb(item);
+	#forEachBy(cb: LoopCb, isReversed = false) {
+		const data = Array.from(this.#data.values());
+		if (isReversed)
+			data.reverse();
+
+		for (let item of data) {
+			const shouldInterrupt = cb(item);
 			if (shouldInterrupt)
 				break;
 			// else
@@ -153,9 +159,9 @@ export default class Scorer {
 		}
 	}
 	forEach(cb: LoopCb) {
-		this.#forEachBy(this.#data, cb);
+		this.#forEachBy(cb);
 	}
 	forReversedEach(cb: LoopCb) { // Point as last
-		this.#forEachBy(this.#data.toReversed(), cb);
+		this.#forEachBy(cb, true);
 	}
 }

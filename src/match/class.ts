@@ -1,10 +1,9 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { Participant, Team } from '../participant';
 import type { ClassName, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
-import { NAME_BY_PARTICIPANT_TYPE } from './consts';
+import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
 import { RestType, Stage } from './enums';
-import type { Config, PanelAction, PanelDefinition, PanelElement, StatsList, Timeouts } from './types';
+import type { Config, MethodName, PanelDefinition, PanelElement, StatsList, Timeouts, WithParticipantOne } from './types';
 import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
 import './css/index.css';
@@ -47,7 +46,7 @@ export default class Match {
 	protected isInTimeout = () => this.isAtRest() && this.restType === RestType.Timeout;
 	protected isFinished = () => this.stage === Stage.Finished;
 
-	protected getParticipantTypeName = () => NAME_BY_PARTICIPANT_TYPE[this.participant.getOfOne().getType()];
+	protected getParticipantTypeName = () => this.participant.getOfOne().getType();
 
 	private getRootHtml(html: Html, classNames: Array<ClassName>, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
 		const htmlGenerator = new HtmlGenerator(html, interpolationDefinition, this.config.sport, classNames);
@@ -164,18 +163,18 @@ export default class Match {
 	}
 
 	private panelElement?: PanelElement;
-	protected getUltimatePanel(definition: PanelDefinition) {
+	protected getUltimatePanel(thisArg: this, definition: PanelDefinition) {
 		const value = this.panelElement;
 		if (isDefined(value))
 			return value;
 
-		const methods: Array<PanelAction> = [];
+		const methodNames: Array<[MethodName, WithParticipantOne?]> = [];
 
 		let html: Html = definition
 			.map(item => {
 				const html: Html = item
-					.map(([text, method]) => {
-						methods.push(method);
+					.map(([text, method, withParticipantOne]) => {
+						methodNames.push([method, withParticipantOne]);
 						return `<button>${upperFirst(text)}</button>`;
 					})
 					.join('');
@@ -196,8 +195,18 @@ export default class Match {
 			result = document.body.firstElementChild;
 
 		assertIsDefined(result);
-		methods.forEach((item, i) => {
-			result.getElementsByTagName('button')[i].addEventListener('click', () => { item(); });
+		methodNames.forEach(([methodName, withParticipantOne], i) => {
+			result.getElementsByTagName('button')[i].addEventListener('click', () => {
+				if (isMemberOf(methodName, thisArg)) {
+					const fn = thisArg[methodName];
+					if (isFunction(fn)) {
+						let arg;
+						if (isDefined(withParticipantOne))
+							arg = withParticipantOne ? this.participant.getOfOne() : this.participant.getOfTwo();
+						fn.call(thisArg, arg);
+					}
+				}
+			});
 		});
 
 		this.panelElement = result;
