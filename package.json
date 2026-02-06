@@ -1,7 +1,7 @@
 {
   "name": "sporscor",
   "version": "1.1.1",
-  "description": "API to manage scoreboard and statistics of sports",
+  "description": "TypeScript API to manage sport data getting scoreboards and statistics",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

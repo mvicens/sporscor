@@ -1,8 +1,8 @@
 # SporScor
 
-API to manage scoreboard and statistics of sports.
+TypeScript API to manage sport data getting scoreboards and statistics.
 
-Implemented sport matches (for now):
+Implemented matches (for now):
 - Basketball
 - Tennis (only players, not pairs)
 - Volleyball
@@ -22,40 +22,36 @@ This is a sample with tennis:
 ```ts
 import { Player, TennisMatch } from 'sporscor';
 
-// Obviously, you can add it directly by HTML
-const selectors = '#app'; // Or wherever content is
-document.querySelector(selectors)!.innerHTML = `
-	<div id="scoreboard"></div>
-	<div id="stats"></div>
-`;
-
-// Players instances
 const
 	playerOne = new Player('R. Federer'),
-	playerTwo = new Player('R. Nadal');
+	playerTwo = new Player('R. Nadal'),
 
-// Match instance
-const match = new TennisMatch(playerOne, playerTwo, () => {
-	// It occurs on change
-	document.getElementById('scoreboard')!.innerHTML = match.getScoreboard();
-	document.getElementById('stats')!.innerHTML = match.getStats();
-});
+	// Obviously, you can use any HTML elements you want
+	scoreboard = document.getElementById('scoreboard'),
+	stats = document.getElementById('stats'),
+
+	match = new TennisMatch(playerOne, playerTwo, () => {
+		scoreboard!.innerHTML = match.getScoreboard();
+		stats!.innerHTML = match.getStats();
+	});
 ```
 
 And then, proceed like e.g.:
 
 ```ts
 match.start();
-// match.play(); // It would failed
+// match.play(); // It would failed (due to someone should be the opening server)
 match.grantOpeningServeTo(playerTwo);
 match.play();
+match.logPointWonBy(playerOne);
+match.logServeAsFault();
 match.logPointWonBy(playerTwo);
 match.logServeAsFault();
-match.logPointWonBy(playerOne);	
-match.logPointWonBy(playerTwo);
+match.logServeAsFault();
 match.logServeAsAce();
+match.logPointWonBy(playerOne);
 ```
 
-Look at current scoreboard and stats. What about it?
+Now look at current content. What about it?
 
 To speed it up, you can use the panel, obtained from `.getPanel()`.
