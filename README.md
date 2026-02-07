@@ -1,6 +1,6 @@
 # SporScor
 
-TypeScript API to manage sport data getting scoreboards and statistics.
+TypeScript API to manage sports data, including scoreboards and statistics.
 
 Implemented matches (for now):
 - Basketball
