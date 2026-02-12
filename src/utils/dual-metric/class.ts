@@ -1,12 +1,12 @@
 import { assertIsDefined, assertIsNumber, DeveloperError, isUndefined, pickRandom } from '..';
-import { Participant } from '../../participant';
+import type { AnyParticipant } from '../../participant';
 import type { Callback } from '../../types';
 import { getOpponentBy, getParticipantNumeral, setValueOfParticipantNumeralByStateProperty, verifyParticipantIsRegistered } from './fns';
 import type { NumericValue, ParticipantNumeral, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
 import { participantsValues } from './vars';
 
 export default class DualMetric<T = NumericValue> {
-	static setParticipants(participantOne: Participant, participantTwo: Participant) {
+	static setParticipants(participantOne: AnyParticipant, participantTwo: AnyParticipant) {
 		if (participantOne.getId() === participantTwo.getId())
 			throw new DeveloperError('Both participants are the same one');
 
@@ -22,7 +22,7 @@ export default class DualMetric<T = NumericValue> {
 		}
 	}
 
-	static setFocusedParticipant(value: Participant) {
+	static setFocusedParticipant(value: AnyParticipant) {
 		const focusedParticipantNumeral = getParticipantNumeral(value);
 		setValueOfParticipantNumeralByStateProperty(focusedParticipantNumeral);
 	}
@@ -41,11 +41,11 @@ export default class DualMetric<T = NumericValue> {
 	#initialValues: ValueByParticipantNumeral<T>;
 	#values: ValueByParticipantNumeral<T>;
 
-	getBy(participant: Participant) {
+	getBy(participant: AnyParticipant) {
 		verifyParticipantIsRegistered(participant);
 		return this.#values[getParticipantNumeral(participant)];
 	}
-	getOpponentBy(participant: Participant) {
+	getOpponentBy(participant: AnyParticipant) {
 		verifyParticipantIsRegistered(participant);
 		return this.getBy(getOpponentBy(participant));
 	}
@@ -108,7 +108,7 @@ export default class DualMetric<T = NumericValue> {
 	}
 
 	getParticipantIf(cb: Callback<[T], boolean>) {
-		let result: undefined | Participant;
+		let result: undefined | AnyParticipant;
 		this.#forEach((value, participant) => {
 			if (cb(value))
 				result = participant;
@@ -116,7 +116,7 @@ export default class DualMetric<T = NumericValue> {
 		return result;
 	}
 
-	#setBy(participant: Participant, value: T) {
+	#setBy(participant: AnyParticipant, value: T) {
 		verifyParticipantIsRegistered(participant);
 		this.#values[getParticipantNumeral(participant)] = value;
 	}
@@ -146,7 +146,7 @@ export default class DualMetric<T = NumericValue> {
 	// 	this.setOfTwo(valueOfTwo);
 	// }
 
-	#resetBy(participant: Participant) {
+	#resetBy(participant: AnyParticipant) {
 		verifyParticipantIsRegistered(participant);
 		this.#setBy(participant, this.#initialValues[getParticipantNumeral(participant)]);
 	}
@@ -198,7 +198,7 @@ export default class DualMetric<T = NumericValue> {
 		return diff >= qty;
 	}
 
-	#forEach(cb: VoidCb<T, Participant>) {
+	#forEach(cb: VoidCb<T, AnyParticipant>) {
 		this.#getValues().forEach((value, index) => {
 			const
 				participantNumeral: ParticipantNumeral = index === 0 ? 'one' : 'two',

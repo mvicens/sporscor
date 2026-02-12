@@ -1,6 +1,6 @@
 import type { Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
-import type { Participant } from '../../../participant';
+import type { AnyParticipant } from '../../../participant';
 import type { ClassName, Html } from '../../../types';
 import { getClassNames, isDefined, resolveValueOrProvider } from '../../../utils';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
@@ -23,7 +23,7 @@ export default class HtmlGenerator {
 
 	#classNames: Array<ClassName>;
 
-	get(participants: [Participant, Participant]) {
+	get(participants: [AnyParticipant, AnyParticipant]) {
 		let html = this.#html;
 
 		this.#interpolationDefinition.forEach(([interpolationDefinitionKey, htmlValueOrProviderByParticipant]) => {

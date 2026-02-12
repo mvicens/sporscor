@@ -1,5 +1,5 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
-import { Participant, Team } from '../participant';
+import { type AnyParticipant, Team } from '../participant';
 import type { ClassName, Html, TableHeaderScope } from '../types';
 import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
 import { RestType, Stage } from './enums';
@@ -9,7 +9,7 @@ import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId
 import './css/index.css';
 
 export default class Match {
-	private verifyEachParticipantIsUnique(valueOfOne: Participant, valueOfTwo: Participant) {
+	private verifyEachParticipantIsUnique(valueOfOne: AnyParticipant, valueOfTwo: AnyParticipant) {
 		if (valueOfOne.getId() === valueOfTwo.getId())
 			throw new Error('Both participants are the same one');
 	}
@@ -32,7 +32,7 @@ export default class Match {
 			};
 	}
 
-	protected participant: DualMetric<Participant>;
+	protected participant: DualMetric<AnyParticipant>;
 
 	protected stage = Stage.Unstarted;
 
@@ -213,7 +213,7 @@ export default class Match {
 		return result;
 	}
 
-	protected verifyParticipantIsRegistered(value: Participant) { verifyParticipantIsRegisteredInDualMetric(value, true); }
+	protected verifyParticipantIsRegistered(value: AnyParticipant) { verifyParticipantIsRegisteredInDualMetric(value, true); }
 
 	private verifyIsUnstarted() {
 		if (!this.isUnstarted())
@@ -253,7 +253,7 @@ export default class Match {
 
 	protected wasPlayed = false;
 	protected play(
-		_?: Participant, // In order to could overwrite method
+		_?: AnyParticipant, // In order to could overwrite method
 		execute = noop,
 		verifyBefore = noop,
 		verifyAfter = () => { this.verifyIsInactive(); }

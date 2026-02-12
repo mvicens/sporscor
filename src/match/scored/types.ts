@@ -1,12 +1,12 @@
 import type { MatchConfig } from '..';
-import { Participant } from '../../participant';
+import type { AnyParticipant } from '../../participant';
 import type { Callback, ClassName, EventListenersBy, Index, Show } from '../../types';
 import { type IsHigherScoreLevelNew, ScoreLevel, type ScoreLevelConfigOfScorer, Scorer, type ValueOrProviderFromScorer } from './utils';
 
 type IsOpeningServer = Show<boolean>;
 type Serve = {
 	qtyPerPoint: number;
-	getServer: (scorer: Scorer) => Participant | IsOpeningServer;
+	getServer: (scorer: Scorer) => AnyParticipant | IsOpeningServer;
 };
 
 export type OnNewByScoreLevel = // Technically named "EventListenersByScoreLevel"
@@ -46,4 +46,4 @@ export type IsColsOfSetsSummarized = Show<boolean>;
 
 export type IsServeIndicatorInOwnCol = Show<boolean>;
 
-export type ExecuteWithServeInfo = Callback<[server: Participant, receiver: Participant, isServerWinner: boolean]>;
+export type ExecuteWithServeInfo = Callback<[server: AnyParticipant, receiver: AnyParticipant, isServerWinner: boolean]>;

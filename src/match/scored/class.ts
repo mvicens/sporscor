@@ -2,7 +2,7 @@ import pluralize from 'pluralize';
 import type { StatsList } from '..';
 import Match, { RestType } from '..';
 import { EMPTY_HTML } from '../../consts';
-import { Participant } from '../../participant';
+import type { AnyParticipant } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
@@ -70,7 +70,7 @@ export default class ScoredMatch extends Match {
 
 	protected scorer: Scorer;
 
-	private openingServer?: Participant;
+	private openingServer?: AnyParticipant;
 
 	private getServer() {
 		if (isUndefined(this.openingServer))
@@ -96,7 +96,7 @@ export default class ScoredMatch extends Match {
 
 	private getClassName = () => resolveValueOrProvider(this.ownConfig.className, this.scorer);
 
-	private getCols(cb: Callback<[GetColsCbArg], Html>, isColsOfSetsSummarized: IsColsOfSetsSummarized, participant?: Participant) {
+	private getCols(cb: Callback<[GetColsCbArg], Html>, isColsOfSetsSummarized: IsColsOfSetsSummarized, participant?: AnyParticipant) {
 		let html = EMPTY_HTML;
 		const { scorer } = this;
 		scorer.forReversedEach(dataItem => {
@@ -170,7 +170,7 @@ export default class ScoredMatch extends Match {
 		});
 		return html;
 	}
-	private getServeTag(html: ValueOrProvider<Html, Html>, participant?: Participant) {
+	private getServeTag(html: ValueOrProvider<Html, Html>, participant?: AnyParticipant) {
 		if (this.isFinished())
 			return EMPTY_HTML;
 
@@ -189,7 +189,7 @@ export default class ScoredMatch extends Match {
 		html = resolveValueOrProvider(html, indicator);
 		return html;
 	}
-	private getRow(isColsOfSetsSummarized: IsColsOfSetsSummarized, isServeIndicatorInOwnCol: IsServeIndicatorInOwnCol, participant: Participant) {
+	private getRow(isColsOfSetsSummarized: IsColsOfSetsSummarized, isServeIndicatorInOwnCol: IsServeIndicatorInOwnCol, participant: AnyParticipant) {
 		let html = this.getCols(
 			({
 				scoreLevel: {
@@ -278,7 +278,7 @@ export default class ScoredMatch extends Match {
 		if (isDefined(this.openingServer))
 			throw new Error('The match already has an opening server');
 	}
-	public grantOpeningServeTo(participant: Participant) {
+	public grantOpeningServeTo(participant: AnyParticipant) {
 		this.verifyParticipantIsRegistered(participant);
 		this.verifyIsPreparing();
 
@@ -296,7 +296,7 @@ export default class ScoredMatch extends Match {
 		if (isUndefined(this.openingServer))
 			throw new Error('An opening server is required');
 	}
-	protected play(_?: Participant, execute = noop) {
+	protected play(_?: AnyParticipant, execute = noop) {
 		super.play(
 			_,
 			() => {
@@ -353,7 +353,7 @@ export default class ScoredMatch extends Match {
 	}
 
 	protected logPointWonBy(
-		participant: Participant,
+		participant: AnyParticipant,
 		executeWithServeInfo: ExecuteWithServeInfo = noop, // Before participant focus
 		executeAtLast = noop // Focusing p., after scorer increment and before event dispatching
 	) {

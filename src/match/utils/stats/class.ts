@@ -1,5 +1,5 @@
 import { NOT_AVAILABLE_ABBR } from '../../../consts';
-import type { Participant } from '../../../participant';
+import type { AnyParticipant } from '../../../participant';
 import type { Callback } from '../../../types';
 import DualMetric from '../../../utils/dual-metric';
 import { DeveloperError } from '../../../utils/errors';
@@ -15,7 +15,7 @@ export default class Stats {
 		return isDefined(qty) ? cb(qty) : NOT_AVAILABLE_ABBR;
 	}
 
-	get = (id: Id, participant: Participant) => this.#get(id, qty => qty.getBy(participant));
+	get = (id: Id, participant: AnyParticipant) => this.#get(id, qty => qty.getBy(participant));
 
 	getOfOne = (id: Id) => this.#get(id, qty => qty.getOfOne());
 	getOfTwo = (id: Id) => this.#get(id, qty => qty.getOfTwo());
@@ -24,7 +24,7 @@ export default class Stats {
 		list.forEach(item => { this.#data[item] = new DualMetric(0); });
 	}
 
-	#set(id: Id, participant: Participant, cb: Callback<[Qty]>) {
+	#set(id: Id, participant: AnyParticipant, cb: Callback<[Qty]>) {
 		let qty = this.#data[id];
 		if (isUndefined(qty))
 			throw new DeveloperError('ID not available');
@@ -33,11 +33,11 @@ export default class Stats {
 		cb(qty);
 	}
 
-	resetOpponent(id: Id, participant: Participant) {
+	resetOpponent(id: Id, participant: AnyParticipant) {
 		this.#set(id, participant, qty => { qty.resetOpponent(); });
 	}
 
-	increase(id: Id, participant: Participant) {
+	increase(id: Id, participant: AnyParticipant) {
 		this.#set(id, participant, qty => { qty.increment(); });
 	}
 }

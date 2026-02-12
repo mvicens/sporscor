@@ -1,9 +1,9 @@
 import { assertIsDefined, DeveloperError } from '..';
-import { Participant, type AnyParticipant } from '../../participant';
+import type { AnyParticipant } from '../../participant';
 import type { ParticipantNumeral } from './types';
 import { participantsValues } from './vars';
 
-export function verifyParticipantIsRegistered(value: Participant, withUsualError = false) {
+export function verifyParticipantIsRegistered(value: AnyParticipant, withUsualError = false) {
 	assertIsDefined(participantsValues.participantByNumeral);
 	const
 		id = value.getId(),
@@ -29,7 +29,7 @@ export function setValueOfParticipantNumeralByStateProperty(focusedParticipantNu
 	participantsValues.participantNumeralByState = { focused, opponent };
 }
 
-export function getParticipantNumeral(participant: Participant) {
+export function getParticipantNumeral(participant: AnyParticipant) {
 	let participantNumeral: undefined | ParticipantNumeral;
 	const id = participant.getId();
 	assertIsDefined(participantsValues.participantByNumeral);
@@ -51,7 +51,7 @@ export function getOpponentBy(participant: AnyParticipant) {
 	return participant;
 }
 
-export function isParticipantOne(participant: Participant) {
+export function isParticipantOne(participant: AnyParticipant) {
 	verifyParticipantIsRegistered(participant);
 
 	assertIsDefined(participantsValues.participantByNumeral);
