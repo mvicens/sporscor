@@ -1,4 +1,4 @@
-import type { Team } from '../../participant';
+import { Team } from '../../participant';
 import type { Show } from '../../types';
 
 export type Qty = Show<number>;

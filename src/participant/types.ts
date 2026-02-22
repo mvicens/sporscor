@@ -1,6 +1,6 @@
 import type { Show } from '../types';
-import type Player from './player';
-import type Team from './team';
+import Player from './player';
+import Team from './team';
 
 export type AnyParticipant = Player | Team;
 

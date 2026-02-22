@@ -1,6 +1,6 @@
-import type { Sport } from '../..';
+import { Sport } from '../..';
 import type { Html, Show, ValueOrProvider } from '../../../types';
-import type DualMetric from '../../../utils/dual-metric';
+import { DualMetric } from '../../../utils';
 import type { Id } from './enums';
 
 export type Value = Show<number>;

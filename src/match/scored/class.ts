@@ -11,7 +11,7 @@ import { ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 
 import './css/index.css';
 
-export default class ScoredMatch extends Match {
+export default abstract class ScoredMatch extends Match {
 	private verifyConfigIsOk(config: Config) {
 		config.scoreLevelsConfig.forEach(item => {
 			if (!isNumber(item))
@@ -23,7 +23,7 @@ export default class ScoredMatch extends Match {
 		});
 		verifyIsPositiveInteger(config.serve.qtyPerPoint);
 	}
-	constructor(private ownConfig: Config) {
+	constructor(private readonly ownConfig: Config) {
 		super(ownConfig);
 
 		this.verifyConfigIsOk(ownConfig);
@@ -68,7 +68,7 @@ export default class ScoredMatch extends Match {
 		);
 	}
 
-	protected scorer: Scorer;
+	protected readonly scorer: Scorer;
 
 	private openingServer?: AnyParticipant;
 
@@ -272,13 +272,13 @@ export default class ScoredMatch extends Match {
 		this.getClassName()
 	);
 
-	public start() { super.start(); }
+	public start(): void { super.start(); }
 
 	private verifyOpeningServerIsAssigned() {
 		if (isDefined(this.openingServer))
 			throw new Error('The match already has an opening server');
 	}
-	public grantOpeningServeTo(participant: AnyParticipant) {
+	public grantOpeningServeTo(participant: AnyParticipant): void {
 		this.verifyParticipantIsRegistered(participant);
 		this.verifyIsPreparing();
 
@@ -313,7 +313,7 @@ export default class ScoredMatch extends Match {
 
 	protected failedServes?: Config['serve']['qtyPerPoint'];
 	protected resetServes() { this.failedServes = 0; }
-	public logServeAsFault() {
+	public logServeAsFault(): void {
 		this.verifyIsPlaying();
 
 		assertIsDefined(this.failedServes);
@@ -334,7 +334,7 @@ export default class ScoredMatch extends Match {
 
 		this.dispatchEvent();
 	}
-	public logServeAsAce() {
+	public logServeAsAce(): void {
 		this.verifyIsPlaying();
 
 		const server = this.getServer();
@@ -345,7 +345,7 @@ export default class ScoredMatch extends Match {
 		this.logPointWonBy(server);
 	}
 
-	public logPointAsLet() {
+	public logPointAsLet(): void {
 		this.verifyIsPlaying();
 
 		this.resetServes();

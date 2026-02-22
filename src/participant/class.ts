@@ -1,16 +1,16 @@
-import type { Type } from './enums';
+import { Type } from './enums';
 import { getNewId } from './fns';
 import type { Id, Name } from './types';
 
-export default class Participant {
-	constructor(private type: Type, private name: Name) {
+export default abstract class Participant {
+	constructor(private readonly type: Type, private readonly name: Name) {
 		this.id = getNewId();
 	}
 
-	private id: Id;
-	public getId = () => this.id;
+	private readonly id: Id;
+	public getId = (): Id => this.id;
 
-	public getType = () => this.type;
+	public getType = (): Type => this.type;
 
-	public getName = () => this.name;
+	public getName = (): Name => this.name;
 }

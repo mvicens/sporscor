@@ -4,13 +4,22 @@ export type Show<T> = T & { __show?: never; }; // In order to force visualizatio
 type Something = Show<string>; // With this…
 const something: Something = ''; something; // "Something" displayed instead "string"
 
-export type Args = Array<any>;
+export type Args = Array<unknown>;
 
-// export type Class<T> = new (...args: Args) => T;
+export type Class = new (...args: Args) => unknown;
 
 export type Index = Show<number>;
 
+export type Defined<T = unknown> = T & ({} | null);
+
+export type NonNull<T = unknown> = T & ({} | undefined);
+
+export type Nullable = null | undefined;
+export type OrNullable<T> = T | Nullable;
+
 export type OneOrMany<T> = T | Array<T>;
+
+export type ItemOf<A> = A extends ReadonlyArray<infer T> ? T | undefined : undefined;
 
 export type Callback<T extends Args, U = void> = (...args: T) => U;
 
@@ -31,4 +40,4 @@ export type Html = Show<string>;
 export type TableHeaderScope = 'col' | 'row';
 
 type ClassNameId = keyof typeof CLASS_NAME_BY_ID;
-export type ClassName = ClassNameId | null | undefined;
+export type ClassName = OrNullable<ClassNameId>;

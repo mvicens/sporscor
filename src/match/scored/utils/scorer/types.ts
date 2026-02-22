@@ -1,7 +1,7 @@
 import Scorer from '.';
 import type { Callback, Html, Show, ValueOrProvider } from '../../../../types';
 import { DualMetric } from '../../../../utils';
-import type { ScoreLevel } from './enums';
+import { ScoreLevel } from './enums';
 
 export type ValueOrProviderFromScorer<T> = ValueOrProvider<T, Scorer>;
 export type ScoreLevelConfig = {

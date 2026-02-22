@@ -1,4 +1,4 @@
-export { assertIsArray, assertIsDefined, assertIsNumber } from './assertions';
+export { assertIsArray, assertIsDefined, assertIsInstanceOf, assertIsNonNull, assertIsNonNullable, assertIsNumber } from './assertions';
 
 export { upperFirst } from './casing';
 
@@ -13,11 +13,11 @@ export { ensureArray, ensureNumber, ensureString } from './ensures';
 
 export { DeveloperError, DeveloperTypeError } from './errors';
 
-export { isArray, isBoolean, isDefined, isFunction, isNumber, isString, isTruth, isUndefined } from './guards';
+export { isArray, isBoolean, isDefined, isFunction, isNonNull, isNonNullable, isNull, isNullable, isNumber, isString, isTruth, isUndefined } from './guards';
 
 export { getClassNames, getLightedElem } from './html';
 
-export { identity, isMemberOf, noop, pickRandom, resolveValueOrProvider } from './misc';
+export { identity, isMemberOf, noop, pickRandom, resolveValueOrProvider, split } from './misc';
 
 export { getNumber, getOrdinal, getPercentage, getRatio, isEvenNumber, isNaN, isOddNumber, padStartNumber } from './numbers';
 

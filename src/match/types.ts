@@ -1,7 +1,7 @@
 import { Player, Team } from '../participant';
 import type { Show } from '../types';
 import { DualMetric } from '../utils';
-import type { Sport } from './enums';
+import { Sport } from './enums';
 import { StatId } from './utils';
 
 type ConfigTimeouts = {

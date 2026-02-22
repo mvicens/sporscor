@@ -1,8 +1,8 @@
-import type { Sport } from '../..';
+import { Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import type { AnyParticipant } from '../../../participant';
 import type { ClassName, Html } from '../../../types';
-import { getClassNames, isDefined, resolveValueOrProvider } from '../../../utils';
+import { assertIsDefined, getClassNames, isDefined, isNull, resolveValueOrProvider, split } from '../../../utils';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
 import { getInterpolation, getInterpolationFromContent } from './fns';
 import type { InterpolationContent, InterpolationDefinition } from './types';
@@ -42,11 +42,15 @@ export default class HtmlGenerator {
 			.split(INTERPOLATION_START_SYMBOL)
 			.map(str => {
 				const
-					[interpolationContent, text] = str.split(INTERPOLATION_END_SYMBOL),
+					[interpolationContent, text] = split(str, INTERPOLATION_END_SYMBOL),
 					hasInterpolation = isDefined(text);
-				return hasInterpolation ? interpolationContent : null;
+				if (hasInterpolation) {
+					assertIsDefined(interpolationContent);
+					return interpolationContent;
+				}
+				return null;
 			})
-			.filter(item => isDefined(item));
+			.filter(item => !isNull(item));
 		interpolationContents.forEach(item => {
 			const interpolation = getInterpolationFromContent(item);
 			html = html.replace(interpolation, '');

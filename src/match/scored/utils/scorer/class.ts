@@ -1,5 +1,5 @@
-import type { Index, MapIterable } from '../../../../types';
-import { assertIsArray, assertIsDefined, DeveloperError, DualMetric, ensureArray, identity, isArray, isDefined, isUndefined, resolveValueOrProvider } from '../../../../utils';
+import type { Index, ItemOf, MapIterable } from '../../../../types';
+import { assertIsArray, assertIsDefined, assertIsInstanceOf, DeveloperError, DualMetric, ensureArray, identity, isArray, isDefined, isUndefined, resolveValueOrProvider } from '../../../../utils';
 import type { OnNewByScoreLevel } from '../../types';
 import { SHOULD_CONTINUE, SHOULD_INTERRUPT } from './consts';
 import { ScoreLevel } from './enums';
@@ -73,15 +73,12 @@ export default class Scorer {
 			assertIsDefined(otherResult);
 			result = otherResult;
 		});
-
-		if (!(result instanceof DualMetric))
-			throw new DeveloperError('Result must be dual metric');
-
+		assertIsInstanceOf(result, DualMetric);
 		return result;
 	}
 
 	#incrementPoint() {
-		let previousQty: DataItem['detailedQty'][number];
+		let previousQty: ItemOf<DataItem['detailedQty']>;
 		this.forEach(item => {
 			if (isDefined(previousQty))
 				item.detailedQty.push(previousQty);
@@ -89,7 +86,7 @@ export default class Scorer {
 			const
 				{ scoreLevel, qty } = item,
 				dispatchEvent = (isHigherScoreLevelNew: IsHigherScoreLevelNew) => {
-					let onNewScoreLevel = this.#onNewByScoreLevel[scoreLevel];
+					const onNewScoreLevel = this.#onNewByScoreLevel[scoreLevel];
 					if (isDefined(onNewScoreLevel))
 						ensureArray(onNewScoreLevel).forEach(item => {
 							item(this, isHigherScoreLevelNew);
@@ -150,7 +147,7 @@ export default class Scorer {
 		if (isReversed)
 			data.reverse();
 
-		for (let item of data) {
+		for (const item of data) {
 			const shouldInterrupt = cb(item);
 			if (shouldInterrupt)
 				break;

@@ -2,7 +2,8 @@ import ScoredMatch, { ScoreLevel } from '..';
 import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport, type MatchConfig } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { Player } from '../../../participant';
-import { assertIsDefined, DualMetric, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined } from '../../../utils';
+import type { Html } from '../../../types';
+import { assertIsDefined, assertIsNumber, DualMetric, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined } from '../../../utils';
 import { StatId, type InterpolationDefinition } from '../../utils';
 import { ADVANTAGE_SYMBOL, MIN_TO_WIN_GAME, MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_IN_GAME, SERVES_PER_POINT, TOTAL_GAMES_WHEN_TIE_BREAK_WON, TOTAL_OF_SETS } from './consts';
 import { getTotalGames, isInTieBreak } from './fns';
@@ -25,7 +26,7 @@ export default class TennisMatch extends ScoredMatch {
 						if (isInTieBreak(scorer))
 							return points;
 
-						const score = POINTS_IN_GAME[points];
+						const score = POINTS_IN_GAME.at(points);
 						if (isDefined(score))
 							return score;
 
@@ -85,7 +86,7 @@ export default class TennisMatch extends ScoredMatch {
 		);
 	}
 
-	public getScoreboard() {
+	public getScoreboard(): Html {
 		const
 			interpolationDefinition: InterpolationDefinition = [],
 			{ scorer } = this;
@@ -98,9 +99,12 @@ export default class TennisMatch extends ScoredMatch {
 						if (isUndefined(player))
 							return EMPTY_HTML;
 
-						const
-							value = lastGamePoints.getBy(player),
-							opponentValue = lastGamePoints.getOpponentBy(player);
+						const value = lastGamePoints.getBy(player);
+						assertIsNumber(value);
+
+						const opponentValue = lastGamePoints.getOpponentBy(player);
+						assertIsNumber(opponentValue);
+
 						return `<sup>${getLightedElem(value, opponentValue)}</sup>`;
 					}
 				]);
@@ -109,7 +113,7 @@ export default class TennisMatch extends ScoredMatch {
 		return this.getDefinedScoreboard(interpolationDefinition);
 	}
 
-	public getStats = () => this.getDefinedStats([
+	public getStats = (): Html => this.getDefinedStats([
 		StatId.ServiceErrors,
 		[StatId.BreakPoints, StatId.PossibleBreakPoints, IS_RATIO_STAT_ID],
 		[StatId.FirstServesIn, StatId.TotalServicePoints, IS_PERCENTAGE_STAT_ID],
@@ -118,7 +122,7 @@ export default class TennisMatch extends ScoredMatch {
 		[StatId.SecondServePointsWon, StatId.SecondServesIn, IS_PERCENTAGE_STAT_ID]
 	]);
 
-	public getPanel = () => this.getUltimatePanel(this, [
+	public getPanel = (): Element => this.getUltimatePanel(this, [
 		[
 			['Start', 'start']
 		],
@@ -143,15 +147,15 @@ export default class TennisMatch extends ScoredMatch {
 		]
 	]);
 
-	public play() { super.play(); }
+	public play(): void { super.play(); }
 
-	public logServeAsLet() {
+	public logServeAsLet(): void {
 		this.verifyIsPlaying();
 		info('Let serve');
 	}
 
 	private hasPossibleBreakPoint = false;
-	public logPointWonBy(player: Player) {
+	public logPointWonBy(player: Player): void {
 		super.logPointWonBy(
 			player,
 			(server, receiver, isServerWinner) => {

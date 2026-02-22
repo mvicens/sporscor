@@ -1,10 +1,8 @@
 import { NOT_AVAILABLE_ABBR } from '../../../consts';
 import type { AnyParticipant } from '../../../participant';
 import type { Callback } from '../../../types';
-import DualMetric from '../../../utils/dual-metric';
-import { DeveloperError } from '../../../utils/errors';
-import { isDefined, isUndefined } from '../../../utils/guards';
-import type { Id } from './enums';
+import { DeveloperError, DualMetric, isDefined, isUndefined } from '../../../utils';
+import { Id } from './enums';
 import type { Data, Qty, Value } from './types';
 
 export default class Stats {
@@ -25,7 +23,7 @@ export default class Stats {
 	}
 
 	#set(id: Id, participant: AnyParticipant, cb: Callback<[Qty]>) {
-		let qty = this.#data[id];
+		const qty = this.#data[id];
 		if (isUndefined(qty))
 			throw new DeveloperError('ID not available');
 

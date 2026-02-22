@@ -1,9 +1,9 @@
-import { ensureString, isDefined } from '.';
+import { ensureString, isNonNullable } from '.';
 import { CLASS_NAME_BY_ID } from '../consts';
 import type { Callback, ClassName, Html } from '../types';
 
 export const getClassNames = (...list: Array<ClassName>) => list
-	.filter(isDefined)
+	.filter(isNonNullable)
 	.map(item => `ss-${CLASS_NAME_BY_ID[item]}`)
 	.join(' ');
 

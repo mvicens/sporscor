@@ -1,4 +1,4 @@
-import { assertIsDefined, assertIsNumber, DeveloperError, isUndefined, pickRandom } from '..';
+import { assertIsNonNullable, assertIsNumber, DeveloperError, isNullable, pickRandom } from '..';
 import type { AnyParticipant } from '../../participant';
 import type { Callback } from '../../types';
 import { getOpponentBy, getParticipantNumeral, setValueOfParticipantNumeralByStateProperty, verifyParticipantIsRegistered } from './fns';
@@ -15,8 +15,8 @@ export default class DualMetric<T = NumericValue> {
 			two: participantTwo
 		};
 
-		// In order to avoid errors at the beginnings when a property of undefined "participantNumeralByState" is accessed
-		if (isUndefined(participantsValues.participantNumeralByState)) {
+		// In order to avoid errors at the beginnings when a property of nullable "participantNumeralByState" is accessed
+		if (isNullable(participantsValues.participantNumeralByState)) {
 			const focusedParticipantNumeral = pickRandom('one', 'two');
 			setValueOfParticipantNumeralByStateProperty(focusedParticipantNumeral);
 		}
@@ -52,13 +52,13 @@ export default class DualMetric<T = NumericValue> {
 
 	#getParticipantByNumeral(numeral: ParticipantNumeral) {
 		const { participantByNumeral } = participantsValues;
-		assertIsDefined(participantByNumeral);
+		assertIsNonNullable(participantByNumeral);
 		return participantByNumeral[numeral];
 	}
 
 	#getParticipantBy(state: ParticipantState) {
 		const { participantNumeralByState } = participantsValues;
-		assertIsDefined(participantNumeralByState);
+		assertIsNonNullable(participantNumeralByState);
 		const participantNumeral = participantNumeralByState[state];
 
 		const participant = this.#getParticipantByNumeral(participantNumeral);
@@ -71,7 +71,7 @@ export default class DualMetric<T = NumericValue> {
 	getOpponent = () => this.getBy(this.#getOpponentParticipant());
 
 	#getOf(participantNumeral: ParticipantNumeral) {
-		assertIsDefined(participantsValues.participantByNumeral);
+		assertIsNonNullable(participantsValues.participantByNumeral);
 		return this.getBy(participantsValues.participantByNumeral[participantNumeral]);
 	}
 	getOfOne = () => this.#getOf('one');
@@ -129,7 +129,7 @@ export default class DualMetric<T = NumericValue> {
 	}
 
 	#setOf(participantNumeral: ParticipantNumeral, value: T) {
-		assertIsDefined(participantsValues.participantByNumeral);
+		assertIsNonNullable(participantsValues.participantByNumeral);
 		const participant = participantsValues.participantByNumeral[participantNumeral];
 
 		this.#setBy(participant, value);

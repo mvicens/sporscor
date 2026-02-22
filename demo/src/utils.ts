@@ -1,10 +1,10 @@
 import { Player, Team, TennisMatch } from '../../src';
 import { SPORTS } from './consts';
-import { currentInstance } from './values';
+import { currentInstance } from './vars';
 
 function getHtmlElement<T extends HTMLElement>(selectors: string) {
 	const value = document.querySelector<T>(selectors);
-	assertIsDefined(value);
+	assertIsNonNullable(value);
 	return value;
 }
 
@@ -37,7 +37,7 @@ export function buildSelection() {
 	const
 		name = getHtmlElement<HTMLSelectElement>('select').value,
 		Class = SPORTS.find(({ name: searchedName }) => searchedName === name)?.class;
-	assertIsDefined(Class);
+	assertIsNonNullable(Class);
 
 	clearHtmlContent('#scoreboard');
 	clearHtmlContent('#stats');
@@ -67,8 +67,8 @@ export function buildSelection() {
 	currentInstance.value = instance;
 }
 
-const isDefined = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;
-function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
-	if (!isDefined(value))
-		throw new Error(`Expected a defined value, but received: ${value}`);
+const isNonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;
+function assertIsNonNullable<T>(value: T): asserts value is NonNullable<T> {
+	if (!isNonNullable(value))
+		throw new Error(`Expected a non-nullable value, but received: ${value}`);
 }

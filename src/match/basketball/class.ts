@@ -1,6 +1,7 @@
 import Match, { IS_PERCENTAGE_STAT_ID, RestType, Sport, type MatchConfig } from '..';
 import { EMPTY_HTML } from '../../consts';
-import type { Team } from '../../participant';
+import { Team } from '../../participant';
+import type { Html } from '../../types';
 import { DualMetric, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
 import { Stage } from '../enums';
 import { StatId } from '../utils';
@@ -62,14 +63,14 @@ export default class BasketballMatch extends Match {
 		);
 	}
 
-	private timer: Timer;
+	private readonly timer: Timer;
 
-	private parts: Parts;
+	private readonly parts: Parts;
 
 	private isRunning = () => this.timer.isRunning;
 	private isPaused = () => !this.isRunning();
 
-	public getScoreboard() {
+	public getScoreboard(): Html {
 		const
 			ths = [
 				`<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>`,
@@ -107,7 +108,7 @@ export default class BasketballMatch extends Match {
 		);
 	}
 
-	public getStats = () => this.getUltimateStats([
+	public getStats = (): Html => this.getUltimateStats([
 		StatId.TwoPointersAttempted,
 		[StatId.TwoPointersMade, StatId.TwoPointersAttempted, IS_PERCENTAGE_STAT_ID],
 
@@ -118,7 +119,7 @@ export default class BasketballMatch extends Match {
 		[StatId.FreeThrowsMade, StatId.FreeThrowsAttempted, IS_PERCENTAGE_STAT_ID],
 	]);
 
-	public getPanel = () => this.getUltimatePanel(this, [
+	public getPanel = (): Element => this.getUltimatePanel(this, [
 		[
 			['Start', 'start']
 		],
@@ -180,7 +181,7 @@ export default class BasketballMatch extends Match {
 			throw new Error('The match is in free throws situation');
 	}
 
-	public start() {
+	public start(): void {
 		super.start(() => { this.timer.resetAll(); });
 	}
 
@@ -192,7 +193,7 @@ export default class BasketballMatch extends Match {
 		} else if (hasValue)
 			warn('The opening ball possessor is unrequired');
 	}
-	public play(openingBallPossessor?: OpeningBallPossessor) {
+	public play(openingBallPossessor?: OpeningBallPossessor): void {
 		const hasOpeningBallPossessor = isDefined(openingBallPossessor);
 		super.play(
 			undefined,
@@ -215,9 +216,9 @@ export default class BasketballMatch extends Match {
 		);
 	}
 
-	public grantTimeoutTo(team: Team) { super.grantTimeoutTo(team); }
+	public grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
 
-	private hasBallPossession = new DualMetric(false);
+	private readonly hasBallPossession = new DualMetric(false);
 	private switchBallPossession() {
 		this.hasBallPossession.swap();
 		this.possibleFreeThrows = 0;
@@ -237,7 +238,7 @@ export default class BasketballMatch extends Match {
 		if (isFoulSpecial)
 			throw new Error('Cannot change ball possession');
 	}
-	public logBallPossessionOf(team: Team) {
+	public logBallPossessionOf(team: Team): void {
 		this.verifyParticipantIsRegistered(team);
 		this.verifyIsPlaying();
 		this.verifyCanChangeBallPossession();
@@ -275,12 +276,12 @@ export default class BasketballMatch extends Match {
 			this.dispatchEvent();
 		});
 	}
-	public pause() {
+	public pause(): void {
 		this._pause(() => {
 			this.possibleFreeThrows = FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL; // At first, only this qty. while no attempted out-of-time field basket
 		});
 	}
-	public resume() {
+	public resume(): void {
 		this.handleTime(() => {
 			this.verifyIsPaused();
 
@@ -355,14 +356,14 @@ export default class BasketballMatch extends Match {
 	private logTwoPointer(isSuccessful: IsSuccessful) {
 		this.logFieldBasket(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, isSuccessful);
 	}
-	public logTwoPointerFailed() { this.logTwoPointer(false); }
-	public logTwoPointerMade() { this.logTwoPointer(true); }
+	public logTwoPointerFailed(): void { this.logTwoPointer(false); }
+	public logTwoPointerMade(): void { this.logTwoPointer(true); }
 
 	private logThreePointer(isSuccessful: IsSuccessful) {
 		this.logFieldBasket(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, isSuccessful);
 	}
-	public logThreePointerFailed() { this.logThreePointer(false); }
-	public logThreePointerMade() { this.logThreePointer(true); }
+	public logThreePointerFailed(): void { this.logThreePointer(false); }
+	public logThreePointerMade(): void { this.logThreePointer(true); }
 
 	private possibleFreeThrows = 0;
 	private verifyHasPossibleFreeThrows() {
@@ -390,8 +391,8 @@ export default class BasketballMatch extends Match {
 			}
 		);
 	}
-	public logFreeThrowFailed() { this.logFreeThrow(false); }
-	public logFreeThrowMade() { this.logFreeThrow(true); }
+	public logFreeThrowFailed(): void { this.logFreeThrow(false); }
+	public logFreeThrowMade(): void { this.logFreeThrow(true); }
 
 	private finishPart() {
 		this.pause();
@@ -408,7 +409,7 @@ export default class BasketballMatch extends Match {
 		this.dispatchEvent();
 	}
 
-	public prepare() {
+	public prepare(): void {
 		this.verifyIsStarted();
 		this.verifyIsAtBreakPerPhase('quarter');
 

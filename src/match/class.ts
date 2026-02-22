@@ -1,19 +1,19 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { type AnyParticipant, Team } from '../participant';
-import type { ClassName, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
+import type { ClassName, Defined, Html, TableHeaderScope } from '../types';
+import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, split, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
 import { RestType, Stage } from './enums';
 import type { Config, MethodName, PanelDefinition, PanelElement, StatsList, Timeouts, WithParticipantOne } from './types';
 import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
 import './css/index.css';
 
-export default class Match {
+export default abstract class Match {
 	private verifyEachParticipantIsUnique(valueOfOne: AnyParticipant, valueOfTwo: AnyParticipant) {
 		if (valueOfOne.getId() === valueOfTwo.getId())
 			throw new Error('Both participants are the same one');
 	}
-	constructor(private config: Config) {
+	constructor(private readonly config: Config) {
 		const [participantOne, participantTwo] = config.participants;
 
 		this.verifyEachParticipantIsUnique(participantOne, participantTwo);
@@ -24,7 +24,7 @@ export default class Match {
 
 		this.stats.makeAvailable(StatId.TotalPoints);
 
-		let { timeouts } = config;
+		const { timeouts } = config;
 		if (isDefined(timeouts))
 			this.timeouts = {
 				...timeouts,
@@ -32,7 +32,7 @@ export default class Match {
 			};
 	}
 
-	protected participant: DualMetric<AnyParticipant>;
+	protected readonly participant: DualMetric<AnyParticipant>;
 
 	protected stage = Stage.Unstarted;
 
@@ -117,8 +117,9 @@ export default class Match {
 								return `${value}%`;
 
 							// Ratio
+							const [pseudonumerator, pseudodenominator] = split(ensureString(value), '.');
+							assertIsDefined(pseudodenominator);
 							const
-								[pseudonumerator, pseudodenominator] = ensureString(value).split('.'),
 								numerator = ensureNumber(pseudonumerator),
 								denominator = ensureNumber(pseudodenominator.substring(0, pseudodenominator.length - 1)),
 								ratio = getRatio(numerator, denominator);
@@ -194,9 +195,9 @@ export default class Match {
 			document = domParser.parseFromString(html, 'text/html'),
 			result = document.body.firstElementChild;
 
-		assertIsDefined(result);
+		assertIsNonNull(result);
 		methodNames.forEach(([methodName, withParticipantOne], i) => {
-			result.getElementsByTagName('button')[i].addEventListener('click', () => {
+			result.getElementsByTagName('button').item(i)?.addEventListener('click', () => {
 				if (isMemberOf(methodName, thisArg)) {
 					const fn = thisArg[methodName];
 					if (isFunction(fn)) {
@@ -270,12 +271,12 @@ export default class Match {
 		this.dispatchEvent();
 	}
 
-	protected timeouts?: Timeouts;
+	protected readonly timeouts?: Timeouts;
 	protected resetTimeouts() {
 		if (isDefined(this.timeouts))
 			this.timeouts.doneQty.resetAll();
 	}
-	private assertCanHandleTimeouts<T>(value: T): asserts value is NonNullable<T> {
+	private assertCanHandleTimeouts<T>(value: T): asserts value is Defined<T> {
 		const canHandleTimeouts = isDefined(value);
 		if (!canHandleTimeouts)
 			throw new DeveloperError('Cannot handle timeouts');

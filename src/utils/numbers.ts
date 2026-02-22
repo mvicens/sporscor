@@ -19,7 +19,7 @@ export function getOrdinal(n: number) {
 	const
 		str = ['th', 'st', 'nd', 'rd'],
 		v = n % 100;
-	return n + (str[(v - 20) % 10] || str[v] || str[0]);
+	return n + (str.at((v - 20) % 10) || str.at(v) || str.at(0) || '');
 }
 
 export function getPercentage(numerator: number, denominator: number) {

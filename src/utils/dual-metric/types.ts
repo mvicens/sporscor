@@ -1,22 +1,18 @@
 import type { AnyParticipant } from '../../participant';
-import type { Callback, Show } from '../../types';
+import type { Callback, OrNullable, Show } from '../../types';
 
 export type NumericValue = Show<number>;
 
 export type ParticipantState = 'focused' | 'opponent';
 export type ParticipantNumeral = 'one' | 'two';
-type ParticipantNumeralByState =
-	| undefined
-	| Record<ParticipantState, | ParticipantNumeral>;
+type ParticipantNumeralByState = Record<ParticipantState, | ParticipantNumeral>;
 
 export type ValueByParticipantNumeral<T> = Record<ParticipantNumeral, T>;
-type ParticipantByNumeral =
-	| undefined
-	| ValueByParticipantNumeral<AnyParticipant>;
+type ParticipantByNumeral = ValueByParticipantNumeral<AnyParticipant>;
 
 export type ParticipantsValues = {
-	participantNumeralByState: ParticipantNumeralByState;
-	participantByNumeral: ParticipantByNumeral;
+	participantNumeralByState: OrNullable<ParticipantNumeralByState>;
+	participantByNumeral: OrNullable<ParticipantByNumeral>;
 };
 
 export type VoidCb<T, U> = Callback<[T, U]>;

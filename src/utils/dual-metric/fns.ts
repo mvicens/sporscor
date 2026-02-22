@@ -1,10 +1,10 @@
-import { assertIsDefined, DeveloperError } from '..';
+import { assertIsDefined, assertIsNonNullable, DeveloperError } from '..';
 import type { AnyParticipant } from '../../participant';
 import type { ParticipantNumeral } from './types';
 import { participantsValues } from './vars';
 
 export function verifyParticipantIsRegistered(value: AnyParticipant, withUsualError = false) {
-	assertIsDefined(participantsValues.participantByNumeral);
+	assertIsNonNullable(participantsValues.participantByNumeral);
 	const
 		id = value.getId(),
 		isParticipantRegistered = Object.values(participantsValues.participantByNumeral).some(({ getId }) => {
@@ -32,7 +32,7 @@ export function setValueOfParticipantNumeralByStateProperty(focusedParticipantNu
 export function getParticipantNumeral(participant: AnyParticipant) {
 	let participantNumeral: undefined | ParticipantNumeral;
 	const id = participant.getId();
-	assertIsDefined(participantsValues.participantByNumeral);
+	assertIsNonNullable(participantsValues.participantByNumeral);
 	Object.entries(participantsValues.participantByNumeral).forEach(([searchedParticipantNumeral, { getId }]) => {
 		const comparedId = getId();
 		if (comparedId === id)
@@ -46,7 +46,7 @@ export function getOpponentBy(participant: AnyParticipant) {
 	let participantNumeral = getParticipantNumeral(participant);
 	participantNumeral = getOpponentNumeral(participantNumeral);
 
-	assertIsDefined(participantsValues.participantByNumeral);
+	assertIsNonNullable(participantsValues.participantByNumeral);
 	participant = participantsValues.participantByNumeral[participantNumeral];
 	return participant;
 }
@@ -54,6 +54,6 @@ export function getOpponentBy(participant: AnyParticipant) {
 export function isParticipantOne(participant: AnyParticipant) {
 	verifyParticipantIsRegistered(participant);
 
-	assertIsDefined(participantsValues.participantByNumeral);
+	assertIsNonNullable(participantsValues.participantByNumeral);
 	return participantsValues.participantByNumeral.one.getId() === participant.getId();
 }
