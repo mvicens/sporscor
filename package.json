@@ -8,8 +8,10 @@
     "dist"
   ],
   "scripts": {
-    "demo-dev": "cd demo/ && npm run dev",
-    "demo-deploy": "cd demo/ && npm run deploy",
+    "dev:lib": "tsc --watch",
+    "dev:demo": "cd demo/ && npm run dev",
+    "dev": "concurrently \"npm run dev:lib\" \"npm run dev:demo\"",
+    "deploy-demo": "cd demo/ && npm run deploy",
     "copy-css": "cpx \"src/**/*.css\" dist/",
     "build": "tsc && npm run copy-css",
     "prepublishOnly": "npm run build"
@@ -33,6 +35,7 @@
   },
   "devDependencies": {
     "@types/pluralize": "^0.0.33",
+    "concurrently": "^9.2.1",
     "cpx": "^1.5.0",
     "typescript": "^5.9.3"
   }

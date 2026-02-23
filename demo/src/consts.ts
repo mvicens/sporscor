@@ -1,4 +1,4 @@
-import { BasketballMatch, TennisMatch, VolleyballMatch } from '../../src';
+import { BasketballMatch, TennisMatch, VolleyballMatch } from './lib';
 
 export const SPORTS = [
 	{

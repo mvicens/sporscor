@@ -1,5 +1,5 @@
-import { Player, Team, TennisMatch } from '../../src';
 import { SPORTS } from './consts';
+import { Player, Team, TennisMatch } from './lib';
 import { currentInstance } from './vars';
 
 function getHtmlElement<T extends HTMLElement>(selectors: string) {
