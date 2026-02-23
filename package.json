@@ -8,13 +8,15 @@
     "dist"
   ],
   "scripts": {
-    "dev:lib": "tsc --watch",
+    "dev:lib-ts": "tsc --watch",
+    "dev:lib-css": "cpx \"src/**/*.css\" dist/ --watch",
+    "dev:lib": "concurrently \"npm:dev:lib-ts\" \"npm:dev:lib-css\"",
     "dev:demo": "cd demo/ && npm run dev",
-    "dev": "concurrently \"npm run dev:lib\" \"npm run dev:demo\"",
-    "deploy-demo": "cd demo/ && npm run deploy",
+    "dev": "concurrently \"npm:dev:lib\" \"npm:dev:demo\"",
     "copy-css": "cpx \"src/**/*.css\" dist/",
     "build": "tsc && npm run copy-css",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "deploy-demo": "cd demo/ && npm run deploy"
   },
   "repository": {
     "type": "git",
