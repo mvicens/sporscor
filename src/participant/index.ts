@@ -8,4 +8,4 @@ import Team from './team';
 export { Team };
 
 export { Type as ParticipantType } from './enums';
-export type { AnyParticipant, Name as ParticipantName } from './types';
+export type { AnyParticipant } from './types';

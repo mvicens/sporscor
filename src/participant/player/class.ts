@@ -1,7 +1,15 @@
-import { Participant, ParticipantType, type ParticipantName } from '..';
+import { Participant, ParticipantType } from '..';
 
+/**
+ * Represents a player to participate in a match.
+ */
 export default class Player extends Participant {
-	constructor(name: ParticipantName) {
+	/**
+	 * Creates a new player.
+	 *
+	 * @param name - The name.
+	 */
+	constructor(name: string) {
 		super(ParticipantType.Player, name);
 	}
 }

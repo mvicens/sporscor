@@ -2,7 +2,7 @@ import pluralize from 'pluralize';
 import type { StatsList } from '..';
 import Match, { RestType } from '..';
 import { EMPTY_HTML } from '../../consts';
-import type { AnyParticipant } from '../../participant';
+import type { AnyParticipant, Player, Team } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
@@ -272,13 +272,22 @@ export default abstract class ScoredMatch extends Match {
 		this.getClassName()
 	);
 
+	/**
+	 * Starts the match to prepare it.
+	 */
 	public start(): void { super.start(); }
 
 	private verifyOpeningServerIsAssigned() {
 		if (isDefined(this.openingServer))
 			throw new Error('The match already has an opening server');
 	}
-	public grantOpeningServeTo(participant: AnyParticipant): void {
+
+	/**
+	 * Grants the opening serve to a participant.
+	 *
+	 * @param participant - The participant.
+	 */
+	public grantOpeningServeTo(participant: Player | Team): void {
 		this.verifyParticipantIsRegistered(participant);
 		this.verifyIsPreparing();
 
@@ -313,6 +322,10 @@ export default abstract class ScoredMatch extends Match {
 
 	protected failedServes?: Config['serve']['qtyPerPoint'];
 	protected resetServes() { this.failedServes = 0; }
+
+	/**
+	 * Logs a serve as fault.
+	 */
 	public logServeAsFault(): void {
 		this.verifyIsPlaying();
 
@@ -334,6 +347,10 @@ export default abstract class ScoredMatch extends Match {
 
 		this.dispatchEvent();
 	}
+
+	/**
+	 * Logs a serve as ace (and the point won by the server).
+	 */
 	public logServeAsAce(): void {
 		this.verifyIsPlaying();
 
@@ -345,6 +362,9 @@ export default abstract class ScoredMatch extends Match {
 		this.logPointWonBy(server);
 	}
 
+	/**
+	 * Logs a point as let.
+	 */
 	public logPointAsLet(): void {
 		this.verifyIsPlaying();
 

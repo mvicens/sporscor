@@ -1,5 +1,5 @@
 import ScoredMatch, { ScoreLevel } from '..';
-import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport, type MatchConfig } from '../..';
+import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { Player } from '../../../participant';
 import type { Html } from '../../../types';
@@ -10,8 +10,18 @@ import { getTotalGames, isInTieBreak } from './fns';
 
 import './css/index.css';
 
+/**
+ * Represents a tennis match.
+ */
 export default class TennisMatch extends ScoredMatch {
-	constructor(playerOne: Player, playerTwo: Player, onChange: MatchConfig['onChange']) {
+	/**
+	 * Creates a new tennis match.
+	 *
+	 * @param playerOne - The 1st player to participate.
+	 * @param playerTwo - The 2nd player to participate.
+	 * @param onChange - A callback called when the scoreboard and/or statistics change.
+	 */
+	constructor(playerOne: Player, playerTwo: Player, onChange: VoidFunction) {
 		super({
 			sport: Sport.Tennis,
 			participants: [playerOne, playerTwo],
@@ -86,7 +96,13 @@ export default class TennisMatch extends ScoredMatch {
 		);
 	}
 
-	public getScoreboard(): Html {
+
+	/**
+	 * Gets a scoreboard to display points, games and other info.
+	 *
+	 * @return The HTML content.
+	 */
+	public getScoreboard(): string {
 		const
 			interpolationDefinition: InterpolationDefinition = [],
 			{ scorer } = this;
@@ -113,7 +129,12 @@ export default class TennisMatch extends ScoredMatch {
 		return this.getDefinedScoreboard(interpolationDefinition);
 	}
 
-	public getStats = (): Html => this.getDefinedStats([
+	/**
+	 * Gets a statistics panel about players playing data.
+	 *
+	 * @return The HTML content.
+	 */
+	public getStats = (): string => this.getDefinedStats([
 		StatId.ServiceErrors,
 		[StatId.BreakPoints, StatId.PossibleBreakPoints, IS_RATIO_STAT_ID],
 		[StatId.FirstServesIn, StatId.TotalServicePoints, IS_PERCENTAGE_STAT_ID],
@@ -122,6 +143,11 @@ export default class TennisMatch extends ScoredMatch {
 		[StatId.SecondServePointsWon, StatId.SecondServesIn, IS_PERCENTAGE_STAT_ID]
 	]);
 
+	/**
+	 * Gets a control panel to interact by buttons (instead invoke the API methods).
+	 *
+	 * @return The HTML element.
+	 */
 	public getPanel = (): Element => this.getUltimatePanel(this, [
 		[
 			['Start', 'start']
@@ -147,14 +173,26 @@ export default class TennisMatch extends ScoredMatch {
 		]
 	]);
 
+	/**
+	 * Starts the prepared match or (at break) the next game (and maybe set) to play.
+	 */
 	public play(): void { super.play(); }
 
+	/**
+	 * Logs a serve as let.
+	 */
 	public logServeAsLet(): void {
 		this.verifyIsPlaying();
 		info('Let serve');
 	}
 
 	private hasPossibleBreakPoint = false;
+
+	/**
+	 * Logs a point won by a player.
+	 *
+	 * @param player - The player.
+	 */
 	public logPointWonBy(player: Player): void {
 		super.logPointWonBy(
 			player,

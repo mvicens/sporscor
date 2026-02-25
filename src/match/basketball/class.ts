@@ -1,7 +1,6 @@
-import Match, { IS_PERCENTAGE_STAT_ID, RestType, Sport, type MatchConfig } from '..';
+import Match, { IS_PERCENTAGE_STAT_ID, RestType, Sport } from '..';
 import { EMPTY_HTML } from '../../consts';
 import { Team } from '../../participant';
-import type { Html } from '../../types';
 import { DualMetric, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
 import { Stage } from '../enums';
 import { StatId } from '../utils';
@@ -9,8 +8,18 @@ import { DECIMALED_MINUTES, DECIMALED_SHOT_CLOCK_SECONDS, FREE_THROWS_BY_FOUL_WH
 import type { IsSuccessful, OpeningBallPossessor, Parts, Qty } from './types';
 import { Timer, type TimerId, type TimerItem } from './utils';
 
+/**
+ * Represents a basketball match.
+ */
 export default class BasketballMatch extends Match {
-	constructor(teamOne: Team, teamTwo: Team, onChange: MatchConfig['onChange']) {
+	/**
+	 * Creates a new basketball match.
+	 *
+	 * @param teamOne - The 1st team to participate.
+	 * @param teamTwo - The 2nd team to participate.
+	 * @param onChange - A callback called when the scoreboard and/or statistics change.
+	 */
+	constructor(teamOne: Team, teamTwo: Team, onChange: VoidFunction) {
 		super({
 			sport: Sport.Basketball,
 			participants: [teamOne, teamTwo],
@@ -70,7 +79,12 @@ export default class BasketballMatch extends Match {
 	private isRunning = () => this.timer.isRunning;
 	private isPaused = () => !this.isRunning();
 
-	public getScoreboard(): Html {
+	/**
+	 * Gets a scoreboard to display points, time and other info.
+	 *
+	 * @return The HTML content.
+	 */
+	public getScoreboard(): string {
 		const
 			ths = [
 				`<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>`,
@@ -108,7 +122,12 @@ export default class BasketballMatch extends Match {
 		);
 	}
 
-	public getStats = (): Html => this.getUltimateStats([
+	/**
+	 * Gets a statistics panel about teams playing data.
+	 *
+	 * @return The HTML content.
+	 */
+	public getStats = (): string => this.getUltimateStats([
 		StatId.TwoPointersAttempted,
 		[StatId.TwoPointersMade, StatId.TwoPointersAttempted, IS_PERCENTAGE_STAT_ID],
 
@@ -119,6 +138,11 @@ export default class BasketballMatch extends Match {
 		[StatId.FreeThrowsMade, StatId.FreeThrowsAttempted, IS_PERCENTAGE_STAT_ID],
 	]);
 
+	/**
+	 * Gets a control panel to interact by buttons (instead invoke the API methods).
+	 *
+	 * @return The HTML element.
+	 */
 	public getPanel = (): Element => this.getUltimatePanel(this, [
 		[
 			['Start', 'start']
@@ -181,6 +205,9 @@ export default class BasketballMatch extends Match {
 			throw new Error('The match is in free throws situation');
 	}
 
+	/**
+	 * Starts the match to prepare it.
+	 */
 	public start(): void {
 		super.start(() => { this.timer.resetAll(); });
 	}
@@ -193,7 +220,13 @@ export default class BasketballMatch extends Match {
 		} else if (hasValue)
 			warn('The opening ball possessor is unrequired');
 	}
-	public play(openingBallPossessor?: OpeningBallPossessor): void {
+
+	/**
+	 * Starts the prepared match (with a team as opening ball possessor) or restarts (in timeout) the current quarter to play.
+	 *
+	 * @param openingBallPossessor - The team.
+	 */
+	public play(openingBallPossessor?: Team): void {
 		const hasOpeningBallPossessor = isDefined(openingBallPossessor);
 		super.play(
 			undefined,
@@ -216,6 +249,11 @@ export default class BasketballMatch extends Match {
 		);
 	}
 
+	/**
+	 * Grants a timeout to a team.
+	 *
+	 * @param team - The team.
+	 */
 	public grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
 
 	private readonly hasBallPossession = new DualMetric(false);
@@ -238,6 +276,12 @@ export default class BasketballMatch extends Match {
 		if (isFoulSpecial)
 			throw new Error('Cannot change ball possession');
 	}
+
+	/**
+	 * Logs the ball possession of a team.
+	 *
+	 * @param team - The team.
+	 */
 	public logBallPossessionOf(team: Team): void {
 		this.verifyParticipantIsRegistered(team);
 		this.verifyIsPlaying();
@@ -276,11 +320,19 @@ export default class BasketballMatch extends Match {
 			this.dispatchEvent();
 		});
 	}
+
+	/**
+	 * Pauses the time.
+	 */
 	public pause(): void {
 		this._pause(() => {
 			this.possibleFreeThrows = FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL; // At first, only this qty. while no attempted out-of-time field basket
 		});
 	}
+
+	/**
+	 * Resumes the time.
+	 */
 	public resume(): void {
 		this.handleTime(() => {
 			this.verifyIsPaused();
@@ -356,13 +408,29 @@ export default class BasketballMatch extends Match {
 	private logTwoPointer(isSuccessful: IsSuccessful) {
 		this.logFieldBasket(2, StatId.TwoPointersAttempted, StatId.TwoPointersMade, isSuccessful);
 	}
+
+	/**
+	 * Logs a two-pointer failed.
+	 */
 	public logTwoPointerFailed(): void { this.logTwoPointer(false); }
+
+	/**
+	 * Logs a two-pointer made.
+	 */
 	public logTwoPointerMade(): void { this.logTwoPointer(true); }
 
 	private logThreePointer(isSuccessful: IsSuccessful) {
 		this.logFieldBasket(3, StatId.ThreePointersAttempted, StatId.ThreePointersMade, isSuccessful);
 	}
+
+	/**
+	 * Logs a three-pointer failed.
+	 */
 	public logThreePointerFailed(): void { this.logThreePointer(false); }
+
+	/**
+	 * Logs a three-pointer made.
+	 */
 	public logThreePointerMade(): void { this.logThreePointer(true); }
 
 	private possibleFreeThrows = 0;
@@ -391,7 +459,15 @@ export default class BasketballMatch extends Match {
 			}
 		);
 	}
+
+	/**
+	 * Logs a free throw failed.
+	 */
 	public logFreeThrowFailed(): void { this.logFreeThrow(false); }
+
+	/**
+	 * Logs a free throw made.
+	 */
 	public logFreeThrowMade(): void { this.logFreeThrow(true); }
 
 	private finishPart() {
@@ -409,6 +485,9 @@ export default class BasketballMatch extends Match {
 		this.dispatchEvent();
 	}
 
+	/**
+	 * Starts (at break) the next quarter to prepare it.
+	 */
 	public prepare(): void {
 		this.verifyIsStarted();
 		this.verifyIsAtBreakPerPhase('quarter');
