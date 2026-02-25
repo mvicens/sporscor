@@ -32,8 +32,8 @@
   },
   "homepage": "https://github.com/mvicens/sporscor#readme",
   "dependencies": {
-    "easytimer.js": "^4.6.0",
-    "pluralize": "^8.0.0"
+    "easytimer.js": "4.6.0",
+    "pluralize": "8.0.0"
   },
   "devDependencies": {
     "@types/pluralize": "^0.0.33",
