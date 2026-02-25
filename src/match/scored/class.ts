@@ -167,6 +167,8 @@ export default abstract class ScoredMatch extends Match {
 						values: getValues(qty)
 					});
 				});
+
+			return;
 		});
 		return html;
 	}
@@ -275,7 +277,7 @@ export default abstract class ScoredMatch extends Match {
 	/**
 	 * Starts the match to prepare it.
 	 */
-	public start(): void { super.start(); }
+	public override start(): void { super.start(); }
 
 	private verifyOpeningServerIsAssigned() {
 		if (isDefined(this.openingServer))
@@ -305,7 +307,7 @@ export default abstract class ScoredMatch extends Match {
 		if (isUndefined(this.openingServer))
 			throw new Error('An opening server is required');
 	}
-	protected play(_?: AnyParticipant, execute = noop) {
+	protected override play(_?: AnyParticipant, execute = noop) {
 		super.play(
 			_,
 			() => {

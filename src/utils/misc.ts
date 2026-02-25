@@ -9,7 +9,7 @@ export const isMemberOf = <T extends object>(name: PropertyKey, receiver: T): na
 export function pickRandom<T>(...values: Array<T>): T {
 	const
 		index = Math.floor(Math.random() * values.length),
-		result = values.at(index);
+		result = values[index];
 	assertIsDefined(result);
 	return result;
 }
@@ -18,8 +18,3 @@ export const resolveValueOrProvider = <T, U>(valueOrProvider: ValueOrProvider<T,
 	isFunction(valueOrProvider)
 		? valueOrProvider(arg)
 		: valueOrProvider;
-
-export function split(value: string, separator: string) {
-	const result: Array<string | undefined> = value.split(separator);
-	return result;
-}

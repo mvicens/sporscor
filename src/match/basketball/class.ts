@@ -208,7 +208,7 @@ export default class BasketballMatch extends Match {
 	/**
 	 * Starts the match to prepare it.
 	 */
-	public start(): void {
+	public override start(): void {
 		super.start(() => { this.timer.resetAll(); });
 	}
 
@@ -226,7 +226,7 @@ export default class BasketballMatch extends Match {
 	 *
 	 * @param openingBallPossessor - The team.
 	 */
-	public play(openingBallPossessor?: Team): void {
+	public override play(openingBallPossessor?: Team): void {
 		const hasOpeningBallPossessor = isDefined(openingBallPossessor);
 		super.play(
 			undefined,
@@ -254,7 +254,7 @@ export default class BasketballMatch extends Match {
 	 *
 	 * @param team - The team.
 	 */
-	public grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
+	public override grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
 
 	private readonly hasBallPossession = new DualMetric(false);
 	private switchBallPossession() {

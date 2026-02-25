@@ -1,7 +1,7 @@
 import { Timer as EasyTimer } from 'easytimer.js';
 import { EMPTY_HTML } from '../../../../consts';
 import type { Callback, Html } from '../../../../types';
-import { assertIsDefined, DeveloperError, ensureNumber, ensureString, isDefined, isPositiveNumber, isString, isUndefined, padStartNumber, split, verifyIsNonNegativeInteger, verifyIsNumberGreaterThan, verifyIsNumberLessThan, verifyIsPositiveInteger } from '../../../../utils';
+import { assertIsDefined, DeveloperError, ensureNumber, ensureString, isDefined, isPositiveNumber, isString, isUndefined, padStartNumber, verifyIsNonNegativeInteger, verifyIsNumberGreaterThan, verifyIsNumberLessThan, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_UPDATE } from './consts';
 import type { ExternalItem, Id, InternalItem } from './types';
 
@@ -159,7 +159,7 @@ export default class Timer {
 			.map(({ value }, i) => {
 				const isFirst = i === 0;
 				if (!isFirst) {
-					const [integer, decimal] = split(value, '.');
+					const [integer, decimal] = value.split('.');
 					assertIsDefined(integer);
 					const paddedInteger = padStartNumber(integer, 2);
 					value = isDefined(decimal) ? `${paddedInteger}.${decimal}` : paddedInteger;

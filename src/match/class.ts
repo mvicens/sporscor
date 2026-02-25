@@ -1,7 +1,7 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { type AnyParticipant, Team } from '../participant';
 import type { ClassName, Defined, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, split, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
+import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
 import { RestType, Stage } from './enums';
 import type { Config, MethodName, PanelDefinition, PanelElement, StatsList, Timeouts, WithParticipantOne } from './types';
 import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
@@ -117,7 +117,7 @@ export default abstract class Match {
 								return `${value}%`;
 
 							// Ratio
-							const [pseudonumerator, pseudodenominator] = split(ensureString(value), '.');
+							const [pseudonumerator, pseudodenominator] = ensureString(value).split('.');
 							assertIsDefined(pseudodenominator);
 							const
 								numerator = ensureNumber(pseudonumerator),
@@ -175,7 +175,7 @@ export default abstract class Match {
 			.map(item => {
 				const html: Html = item
 					.map(([text, method, withParticipantOne]) => {
-						methodNames.push([method, withParticipantOne]);
+						methodNames.push([method, withParticipantOne ?? false]);
 						return `<button>${upperFirst(text)}</button>`;
 					})
 					.join('');

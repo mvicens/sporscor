@@ -2,7 +2,6 @@ import ScoredMatch, { ScoreLevel } from '..';
 import { IS_PERCENTAGE_STAT_ID, RestType, Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { Team } from '../../../participant';
-import type { Html } from '../../../types';
 import { DualMetric, getRatio, isDefined } from '../../../utils';
 import { StatId } from '../../utils';
 import { MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_MAX_TO_GO_TO_REST, POINTS_MAX_TO_GO_TO_REST_IN_TIE_BREAK, SERVES_PER_POINT, TOTAL_OF_SETS } from './consts';
@@ -155,7 +154,7 @@ export default class VolleyballMatch extends ScoredMatch {
 	/**
 	 * Starts the prepared match or (at break) the next set, or restarts (in timeout) the current set, to play.
 	 */
-	public play(): void {
+	public override play(): void {
 		super.play(undefined, () => { this.isSomePointDone = false; });
 	}
 
@@ -164,14 +163,14 @@ export default class VolleyballMatch extends ScoredMatch {
 	 *
 	 * @param team - The team.
 	 */
-	public grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
+	public override grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
 
 	/**
 	 * Logs a point won by a team.
 	 *
 	 * @param team - The team.
 	 */
-	public logPointWonBy(team: Team): void {
+	public override  logPointWonBy(team: Team): void {
 		super.logPointWonBy(
 			team,
 			(server, receiver, isServerWinner) => {

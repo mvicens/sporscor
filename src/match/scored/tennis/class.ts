@@ -2,7 +2,6 @@ import ScoredMatch, { ScoreLevel } from '..';
 import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { Player } from '../../../participant';
-import type { Html } from '../../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined } from '../../../utils';
 import { StatId, type InterpolationDefinition } from '../../utils';
 import { ADVANTAGE_SYMBOL, MIN_TO_WIN_GAME, MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_IN_GAME, SERVES_PER_POINT, TOTAL_GAMES_WHEN_TIE_BREAK_WON, TOTAL_OF_SETS } from './consts';
@@ -36,7 +35,7 @@ export default class TennisMatch extends ScoredMatch {
 						if (isInTieBreak(scorer))
 							return points;
 
-						const score = POINTS_IN_GAME.at(points);
+						const score = POINTS_IN_GAME[points];
 						if (isDefined(score))
 							return score;
 
@@ -176,7 +175,7 @@ export default class TennisMatch extends ScoredMatch {
 	/**
 	 * Starts the prepared match or (at break) the next game (and maybe set) to play.
 	 */
-	public play(): void { super.play(); }
+	public override play(): void { super.play(); }
 
 	/**
 	 * Logs a serve as let.
@@ -193,7 +192,7 @@ export default class TennisMatch extends ScoredMatch {
 	 *
 	 * @param player - The player.
 	 */
-	public logPointWonBy(player: Player): void {
+	public override logPointWonBy(player: Player): void {
 		super.logPointWonBy(
 			player,
 			(server, receiver, isServerWinner) => {

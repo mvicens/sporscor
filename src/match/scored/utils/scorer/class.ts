@@ -7,7 +7,7 @@ import type { Data, DataItem, IsHigherScoreLevelNew, LoopCb, NestedPoints, Neste
 
 export default class Scorer {
 	constructor(scoreLevelsConfig: Array<ScoreLevelConfig>, onFinish: OnFinish, onNewByScoreLevel: OnNewByScoreLevel) {
-		if (scoreLevelsConfig.at(0)?.scoreLevel !== ScoreLevel.Point)
+		if (scoreLevelsConfig[0]?.scoreLevel !== ScoreLevel.Point)
 			throw new DeveloperError('1st score level must be point\'s');
 
 		const data: MapIterable<ScoreLevel, DataItem> = scoreLevelsConfig.map(item => [
@@ -69,7 +69,7 @@ export default class Scorer {
 		let result: NestedPointsItem = this.#nestedPoints;
 		indexes.forEach(item => {
 			assertIsArray(result);
-			const otherResult = result.at(item);
+			const otherResult = result[item];
 			assertIsDefined(otherResult);
 			result = otherResult;
 		});
@@ -105,7 +105,7 @@ export default class Scorer {
 						if (isArray(content))
 							container = content;
 						index = qty.getTotal();
-						let otherContent = container.at(index);
+						let otherContent = container[index];
 						if (isUndefined(otherContent))
 							otherContent = container[index] = [];
 						content = otherContent;
@@ -129,6 +129,8 @@ export default class Scorer {
 				return SHOULD_CONTINUE;
 			} else
 				this.#onFinish(); // No return nor event dispatching due to last loop
+
+			return;
 		});
 	}
 	increment(scoreLevel: ScoreLevel) {
