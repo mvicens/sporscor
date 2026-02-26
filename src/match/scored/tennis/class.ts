@@ -173,6 +173,13 @@ export default class TennisMatch extends ScoredMatch {
 	]);
 
 	/**
+	 * Grants the opening serve to a player.
+	 *
+	 * @param player - The player.
+	 */
+	public override grantOpeningServeTo(player: Player): void { super.grantOpeningServeTo(player); }
+
+	/**
 	 * Starts the prepared match or (at break) the next game (and maybe set) to play.
 	 */
 	public override play(): void { super.play(); }

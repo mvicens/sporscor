@@ -11,5 +11,9 @@ export default class Team extends Participant {
 	 */
 	constructor(name: string) {
 		super(ParticipantType.Team, name);
+
+		this._;
 	}
+
+	private _ = null; // In order to diff from "Player"
 }

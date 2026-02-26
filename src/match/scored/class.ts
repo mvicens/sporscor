@@ -2,7 +2,7 @@ import pluralize from 'pluralize';
 import type { StatsList } from '..';
 import Match, { RestType } from '..';
 import { EMPTY_HTML } from '../../consts';
-import type { AnyParticipant, Player, Team } from '../../participant';
+import type { AnyParticipant } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
@@ -283,13 +283,7 @@ export default abstract class ScoredMatch extends Match {
 		if (isDefined(this.openingServer))
 			throw new Error('The match already has an opening server');
 	}
-
-	/**
-	 * Grants the opening serve to a participant.
-	 *
-	 * @param participant - The participant.
-	 */
-	public grantOpeningServeTo(participant: Player | Team): void {
+	protected grantOpeningServeTo(participant: AnyParticipant): void {
 		this.verifyParticipantIsRegistered(participant);
 		this.verifyIsPreparing();
 

@@ -152,6 +152,13 @@ export default class VolleyballMatch extends ScoredMatch {
 		false;
 
 	/**
+	 * Grants the opening serve to a team.
+	 *
+	 * @param team - The team.
+	 */
+	public override grantOpeningServeTo(team: Team): void { super.grantOpeningServeTo(team); }
+
+	/**
 	 * Starts the prepared match or (at break) the next set, or restarts (in timeout) the current set, to play.
 	 */
 	public override play(): void {
