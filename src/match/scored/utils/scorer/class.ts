@@ -70,7 +70,7 @@ export default class Scorer {
 		let result: NestedPointsItem = this.#nestedPoints;
 		indexes.forEach(item => {
 			assertIsArray(result);
-			const otherResult = result[item];
+			const otherResult = result.at(item); // Possible negative index
 			assertIsDefined(otherResult);
 			result = otherResult;
 		});
