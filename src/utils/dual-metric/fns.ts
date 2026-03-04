@@ -1,59 +1,69 @@
-import { assertIsDefined, assertIsNonNullable, DeveloperError } from '..';
+import { assertIsDefined, DeveloperError, isDefined } from '..';
 import type { AnyParticipant } from '../../participant';
-import type { ParticipantNumeral } from './types';
-import { participantsValues } from './vars';
+import type { ParticipantNumeral, ParticipantsManager } from './types';
 
-export function verifyParticipantIsRegistered(value: AnyParticipant, withUsualError = false) {
-	assertIsNonNullable(participantsValues.participantByNumeral);
-	const
-		id = value.getId(),
-		isParticipantRegistered = Object.values(participantsValues.participantByNumeral).some(({ getId }) => {
-			const comparedId = getId();
-			return comparedId === id;
-		});
+export const getParticipantsManager = (valueOfOne: AnyParticipant, valueOfTwo: AnyParticipant): ParticipantsManager => {
+	if (valueOfOne.getId() === valueOfTwo.getId())
+		throw new DeveloperError('Both participants are the same one');
 
-	if (!isParticipantRegistered) {
-		if (withUsualError)
-			throw new Error('The participant is not registered');
-		else
-			throw new DeveloperError('Participant is not registered');
-	}
-}
+	const getOpponentNumeral = (value: ParticipantNumeral): ParticipantNumeral => value === 'one' ? 'two' : 'one';
 
-export const getOpponentNumeral = (value: ParticipantNumeral): ParticipantNumeral => value === 'one' ? 'two' : 'one';
+	return {
+		valueByNumeral: {
+			one: valueOfOne,
+			two: valueOfTwo
+		},
+		numeralByState: null,
+		findNumeral: function (value: AnyParticipant) {
+			let numeral: undefined | ParticipantNumeral;
+			const id = value.getId();
+			Object.entries(this.valueByNumeral).forEach(([searchedParticipantNumeral, { getId }]) => {
+				const comparedId = getId();
+				if (comparedId === id)
+					numeral = searchedParticipantNumeral as ParticipantNumeral;
+			});
+			return numeral;
+		},
+		getNumeral: function (value: AnyParticipant) {
+			const numeral = this.findNumeral(value);
+			assertIsDefined(numeral);
+			return numeral;
+		},
+		getOpponentBy: function (value: AnyParticipant) {
+			let numeral = this.getNumeral(value);
+			numeral = getOpponentNumeral(numeral);
 
-export function setValueOfParticipantNumeralByStateProperty(focusedParticipantNumeral: ParticipantNumeral) {
-	const
-		focused = focusedParticipantNumeral,
-		opponent = getOpponentNumeral(focused);
-	participantsValues.participantNumeralByState = { focused, opponent };
-}
+			value = this.valueByNumeral[numeral];
+			return value;
+		},
+		isOne: function (value: AnyParticipant) { return this.valueByNumeral.one.getId() === value.getId(); },
+		verify: function (value: AnyParticipant, withUsualError = false) {
+			const
+				id = value.getId(),
+				isRegistered = Object.values(this.valueByNumeral).some(({ getId }) => {
+					const comparedId = getId();
+					return comparedId === id;
+				});
+			if (!isRegistered) {
+				if (withUsualError)
+					throw new Error('The participant is not registered');
+				else
+					throw new DeveloperError('Participant is not registered');
 
-export function getParticipantNumeral(participant: AnyParticipant) {
-	let participantNumeral: undefined | ParticipantNumeral;
-	const id = participant.getId();
-	assertIsNonNullable(participantsValues.participantByNumeral);
-	Object.entries(participantsValues.participantByNumeral).forEach(([searchedParticipantNumeral, { getId }]) => {
-		const comparedId = getId();
-		if (comparedId === id)
-			participantNumeral = searchedParticipantNumeral as ParticipantNumeral;
-	});
-	assertIsDefined(participantNumeral);
-	return participantNumeral;
-}
+			}
+		},
+		focus: function (value: AnyParticipant) {
+			const
+				numeral = this.findNumeral(value),
+				isRegistered = isDefined(numeral);
 
-export function getOpponentBy(participant: AnyParticipant) {
-	let participantNumeral = getParticipantNumeral(participant);
-	participantNumeral = getOpponentNumeral(participantNumeral);
+			if (!isRegistered)
+				throw new Error('The participant is not registered');
 
-	assertIsNonNullable(participantsValues.participantByNumeral);
-	participant = participantsValues.participantByNumeral[participantNumeral];
-	return participant;
-}
-
-export function isParticipantOne(participant: AnyParticipant) {
-	verifyParticipantIsRegistered(participant);
-
-	assertIsNonNullable(participantsValues.participantByNumeral);
-	return participantsValues.participantByNumeral.one.getId() === participant.getId();
-}
+			this.numeralByState = {
+				focused: numeral,
+				opponent: getOpponentNumeral(numeral)
+			};
+		}
+	};
+};

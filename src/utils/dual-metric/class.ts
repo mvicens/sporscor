@@ -1,33 +1,12 @@
-import { assertIsNonNullable, assertIsNumber, DeveloperError, isNullable, pickRandom } from '..';
+import { assertIsNonNullable, assertIsNumber } from '..';
 import type { AnyParticipant } from '../../participant';
 import type { Callback } from '../../types';
-import { getOpponentBy, getParticipantNumeral, setValueOfParticipantNumeralByStateProperty, verifyParticipantIsRegistered } from './fns';
-import type { NumericValue, ParticipantNumeral, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
-import { participantsValues } from './vars';
+import type { NumericValue, ParticipantNumeral, ParticipantsManager, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
 
 export default class DualMetric<T = NumericValue> {
-	static setParticipants(participantOne: AnyParticipant, participantTwo: AnyParticipant) {
-		if (participantOne.getId() === participantTwo.getId())
-			throw new DeveloperError('Both participants are the same one');
+	constructor(participantsManager: ParticipantsManager, initialValue: T, initialValueOfTwo: T = initialValue) {
+		this.#participantsManager = participantsManager;
 
-		participantsValues.participantByNumeral = {
-			one: participantOne,
-			two: participantTwo
-		};
-
-		// In order to avoid errors at the beginnings when a property of nullable "participantNumeralByState" is accessed
-		if (isNullable(participantsValues.participantNumeralByState)) {
-			const focusedParticipantNumeral = pickRandom('one', 'two');
-			setValueOfParticipantNumeralByStateProperty(focusedParticipantNumeral);
-		}
-	}
-
-	static setFocusedParticipant(value: AnyParticipant) {
-		const focusedParticipantNumeral = getParticipantNumeral(value);
-		setValueOfParticipantNumeralByStateProperty(focusedParticipantNumeral);
-	}
-
-	constructor(initialValue: T, initialValueOfTwo: T = initialValue) {
 		this.#initialValues = {
 			one: initialValue,
 			two: initialValueOfTwo
@@ -38,28 +17,26 @@ export default class DualMetric<T = NumericValue> {
 		};
 	}
 
+	#participantsManager: ParticipantsManager;
+
 	#initialValues: ValueByParticipantNumeral<T>;
 	#values: ValueByParticipantNumeral<T>;
 
 	getBy(participant: AnyParticipant) {
-		verifyParticipantIsRegistered(participant);
-		return this.#values[getParticipantNumeral(participant)];
+		this.#participantsManager.verify(participant);
+		return this.#values[this.#participantsManager.getNumeral(participant)];
 	}
 	getOpponentBy(participant: AnyParticipant) {
-		verifyParticipantIsRegistered(participant);
-		return this.getBy(getOpponentBy(participant));
+		this.#participantsManager.verify(participant);
+		return this.getBy(this.#participantsManager.getOpponentBy(participant));
 	}
 
-	#getParticipantByNumeral(numeral: ParticipantNumeral) {
-		const { participantByNumeral } = participantsValues;
-		assertIsNonNullable(participantByNumeral);
-		return participantByNumeral[numeral];
-	}
+	#getParticipantByNumeral(numeral: ParticipantNumeral) { return this.#participantsManager.valueByNumeral[numeral]; }
 
 	#getParticipantBy(state: ParticipantState) {
-		const { participantNumeralByState } = participantsValues;
-		assertIsNonNullable(participantNumeralByState);
-		const participantNumeral = participantNumeralByState[state];
+		const { numeralByState } = this.#participantsManager;
+		assertIsNonNullable(numeralByState);
+		const participantNumeral = numeralByState[state];
 
 		const participant = this.#getParticipantByNumeral(participantNumeral);
 		return participant;
@@ -70,10 +47,7 @@ export default class DualMetric<T = NumericValue> {
 	get = () => this.getBy(this.#getFocusedParticipant());
 	getOpponent = () => this.getBy(this.#getOpponentParticipant());
 
-	#getOf(participantNumeral: ParticipantNumeral) {
-		assertIsNonNullable(participantsValues.participantByNumeral);
-		return this.getBy(participantsValues.participantByNumeral[participantNumeral]);
-	}
+	#getOf(participantNumeral: ParticipantNumeral) { return this.getBy(this.#participantsManager.valueByNumeral[participantNumeral]); }
 	getOfOne = () => this.#getOf('one');
 	getOfTwo = () => this.#getOf('two');
 
@@ -117,8 +91,8 @@ export default class DualMetric<T = NumericValue> {
 	}
 
 	#setBy(participant: AnyParticipant, value: T) {
-		verifyParticipantIsRegistered(participant);
-		this.#values[getParticipantNumeral(participant)] = value;
+		this.#participantsManager.verify(participant);
+		this.#values[this.#participantsManager.getNumeral(participant)] = value;
 	}
 
 	set(value: T) {
@@ -129,9 +103,7 @@ export default class DualMetric<T = NumericValue> {
 	}
 
 	#setOf(participantNumeral: ParticipantNumeral, value: T) {
-		assertIsNonNullable(participantsValues.participantByNumeral);
-		const participant = participantsValues.participantByNumeral[participantNumeral];
-
+		const participant = this.#participantsManager.valueByNumeral[participantNumeral];
 		this.#setBy(participant, value);
 	}
 	setOfOne(value: T) {
@@ -147,8 +119,8 @@ export default class DualMetric<T = NumericValue> {
 	// }
 
 	#resetBy(participant: AnyParticipant) {
-		verifyParticipantIsRegistered(participant);
-		this.#setBy(participant, this.#initialValues[getParticipantNumeral(participant)]);
+		this.#participantsManager.verify(participant);
+		this.#setBy(participant, this.#initialValues[this.#participantsManager.getNumeral(participant)]);
 	}
 	#reset() {
 		this.#resetBy(this.#getFocusedParticipant());
@@ -206,10 +178,10 @@ export default class DualMetric<T = NumericValue> {
 			cb(value, participant);
 		});
 	}
-	// every = (cb: ReturningCb<T>) => this.#getValues().every(cb);
+	every = (cb: ReturningCb<T>) => this.#getValues().every(cb);
 	some = (cb: ReturningCb<T>) => this.#getValues().some(cb);
 
-	clone = () => new DualMetric(this.getOfOne(), this.getOfTwo());
+	clone = () => new DualMetric(this.#participantsManager, this.getOfOne(), this.getOfTwo());
 
 	// toString = () => this.#values;
 }

@@ -2,7 +2,7 @@ import ScoredMatch, { ScoreLevel } from '..';
 import { IS_PERCENTAGE_STAT_ID, RestType, Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { Team } from '../../../participant';
-import { DualMetric, getRatio, isDefined } from '../../../utils';
+import { DualMetric, getRatio, isDefined, isFalse } from '../../../utils';
 import { StatId } from '../../utils';
 import { MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_MAX_TO_GO_TO_REST, POINTS_MAX_TO_GO_TO_REST_IN_TIE_BREAK, SERVES_PER_POINT, TOTAL_OF_SETS } from './consts';
 import { getTimeoutsPerPhase, isInTieBreak } from './fns';
@@ -40,7 +40,7 @@ export default class VolleyballMatch extends ScoredMatch {
 			serve: {
 				qtyPerPoint: SERVES_PER_POINT,
 				getServer: () => {
-					if (this.isLastPointWon.get() === this.isLastPointWon.getOpponent()) { // Both false
+					if (this.isLastPointWon.every(isFalse)) {
 						const isOpeningServer = true;
 						return isOpeningServer;
 					}
@@ -82,7 +82,7 @@ export default class VolleyballMatch extends ScoredMatch {
 		this.resetPendingPointsMaxToGoToRest();
 	}
 
-	private readonly isLastPointWon = new DualMetric(false);
+	private readonly isLastPointWon = new DualMetric(this.participantsManagerOfDualMetric, false);
 
 
 	/**

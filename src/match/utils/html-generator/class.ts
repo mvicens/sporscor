@@ -2,7 +2,7 @@ import { Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import type { AnyParticipant } from '../../../participant';
 import type { ClassName, Html } from '../../../types';
-import { assertIsDefined, getClassNames, isDefined, isNull, resolveValueOrProvider } from '../../../utils';
+import { assertIsDefined, getClassNames, isDefined, isNull, ParticipantsManagerOfDualMetric, resolveValueOrProvider } from '../../../utils';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
 import { getInterpolation, getInterpolationFromContent } from './fns';
 import type { InterpolationContent, InterpolationDefinition } from './types';
@@ -23,7 +23,7 @@ export default class HtmlGenerator {
 
 	#classNames: Array<ClassName>;
 
-	get(participants: [AnyParticipant, AnyParticipant]) {
+	get(participants: [AnyParticipant, AnyParticipant], participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric) {
 		let html = this.#html;
 
 		this.#interpolationDefinition.forEach(([interpolationDefinitionKey, htmlValueOrProviderByParticipant]) => {
@@ -32,7 +32,7 @@ export default class HtmlGenerator {
 				...participants
 			].forEach(participant => {
 				const
-					interpolation = getInterpolation(interpolationDefinitionKey, participant),
+					interpolation = getInterpolation(interpolationDefinitionKey, participantsManagerOfDualMetric, participant),
 					replaceHtml = resolveValueOrProvider(htmlValueOrProviderByParticipant, participant);
 				html = html.replace(interpolation, replaceHtml);
 			});

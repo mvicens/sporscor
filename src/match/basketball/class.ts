@@ -256,7 +256,7 @@ export default class BasketballMatch extends Match {
 	 */
 	public override grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
 
-	private readonly hasBallPossession = new DualMetric(false);
+	private readonly hasBallPossession = new DualMetric(this.participantsManagerOfDualMetric, false);
 	private switchBallPossession() {
 		this.hasBallPossession.swap();
 		this.possibleFreeThrows = 0;
@@ -287,7 +287,7 @@ export default class BasketballMatch extends Match {
 		this.verifyIsPlaying();
 		this.verifyCanChangeBallPossession();
 
-		DualMetric.setFocusedParticipant(team);
+		this.participantsManagerOfDualMetric.focus(team);
 		const hasBallPossession = this.hasBallPossession.get();
 		if (hasBallPossession)
 			warn(`${upperFirst(team.getName())} already has ball possession`);

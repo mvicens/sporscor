@@ -4,7 +4,7 @@ export type Show<T> = T & { __show?: never; }; // In order to force visualizatio
 type Something = Show<string>; // With this…
 const something: Something = ''; something; // "Something" displayed instead "string"
 
-export type Args = Array<unknown>;
+export type Args = Array<any>;
 
 export type Class = new (...args: Args) => unknown;
 

@@ -6,6 +6,7 @@ export const isNumber = (value: unknown): value is number => typeof value === 'n
 
 export const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
 export const isTruth = (value: unknown): value is true => value === true;
+export const isFalse = (value: unknown): value is false => value === false;
 
 export const isFunction = (value: unknown): value is Function => typeof value === 'function';
 
@@ -18,5 +19,5 @@ export const isNonNull = <T>(value: T): value is T & NonNull => !isNull(value);
 
 export const isDefined = <T>(value: T): value is Defined<T> => value !== undefined;
 
-export const isNullable = <T>(value: T): value is T & Nullable => value === null || value === undefined;
+const isNullable = <T>(value: T): value is T & Nullable => value === null || value === undefined;
 export const isNonNullable = <T>(value: T): value is NonNullable<T> => !isNullable(value);

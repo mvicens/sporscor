@@ -1,7 +1,7 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { type AnyParticipant, Team } from '../participant';
 import type { ClassName, Defined, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyParticipantIsRegisteredInDualMetric, warn } from '../utils';
+import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getParticipantsManagerOfDualMetric, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, ParticipantsManagerOfDualMetric, resolveValueOrProvider, upperFirst, warn } from '../utils';
 import { RestType, Stage } from './enums';
 import type { Config, MethodName, PanelDefinition, PanelElement, StatsList, Timeouts, WithParticipantOne } from './types';
 import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
@@ -18,19 +18,24 @@ export default abstract class Match {
 
 		this.verifyEachParticipantIsUnique(participantOne, participantTwo);
 
-		DualMetric.setParticipants(participantOne, participantTwo);
+		const participantsManagerOfDualMetric = getParticipantsManagerOfDualMetric(participantOne, participantTwo);
 
-		this.participant = new DualMetric(participantOne, participantTwo);
+		this.participantsManagerOfDualMetric = participantsManagerOfDualMetric;
 
+		this.participant = new DualMetric(participantsManagerOfDualMetric, participantOne, participantTwo);
+
+		this.stats = new Stats(participantsManagerOfDualMetric);
 		this.stats.makeAvailable(StatId.TotalPoints);
 
 		const { timeouts } = config;
 		if (isDefined(timeouts))
 			this.timeouts = {
 				...timeouts,
-				doneQty: new DualMetric(0)
+				doneQty: new DualMetric(participantsManagerOfDualMetric, 0)
 			};
 	}
+
+	protected participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric;
 
 	protected readonly participant: DualMetric<AnyParticipant>;
 
@@ -50,7 +55,7 @@ export default abstract class Match {
 
 	private getRootHtml(html: Html, classNames: Array<ClassName>, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
 		const htmlGenerator = new HtmlGenerator(html, interpolationDefinition, this.config.sport, classNames);
-		return htmlGenerator.get(this.participant.getAll());
+		return htmlGenerator.get(this.participant.getAll(), this.participantsManagerOfDualMetric);
 	}
 
 	protected getUltimateScoreboard(html: Html, className?: ClassName, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
@@ -67,7 +72,7 @@ export default abstract class Match {
 		return this.getRootHtml(html, ['scoreboard', className], interpolationDefinition);
 	}
 
-	protected stats = new Stats();
+	protected stats: Stats;
 	protected getUltimateStats(statsList: StatsList, className?: ClassName) {
 		const
 			ultimateStatsList = [
@@ -214,7 +219,7 @@ export default abstract class Match {
 		return result;
 	}
 
-	protected verifyParticipantIsRegistered(value: AnyParticipant) { verifyParticipantIsRegisteredInDualMetric(value, true); }
+	protected verifyParticipantIsRegistered(value: AnyParticipant) { this.participantsManagerOfDualMetric.verify(value, true); }
 
 	private verifyIsUnstarted() {
 		if (!this.isUnstarted())
@@ -300,7 +305,7 @@ export default abstract class Match {
 		this.verifyTimeoutIsDoneable();
 		this.verifyAllTimeoutsAreNotDone(team);
 
-		DualMetric.setFocusedParticipant(team);
+		this.participantsManagerOfDualMetric.focus(team);
 		this.timeouts.doneQty.increment();
 
 		this.goToRest(RestType.Timeout);

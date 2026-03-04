@@ -4,7 +4,7 @@ import Match, { RestType } from '..';
 import { EMPTY_HTML } from '../../consts';
 import type { AnyParticipant } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
-import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOpponentBy, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
+import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
 import type { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
 import { ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
@@ -56,6 +56,7 @@ export default abstract class ScoredMatch extends Match {
 
 		this.scorer = new Scorer(
 			scoreLevelsConfig,
+			this.participantsManagerOfDualMetric,
 			() => { this.finish(); },
 			onNewByScoreLevel
 		);
@@ -82,7 +83,7 @@ export default abstract class ScoredMatch extends Match {
 			const isOpeningServer = participantOrIsOpeningServer;
 			return isOpeningServer
 				? this.openingServer
-				: getOpponentBy(this.openingServer);
+				: this.participantsManagerOfDualMetric.getOpponentBy(this.openingServer);
 		}
 
 		const participant = participantOrIsOpeningServer;
@@ -91,7 +92,7 @@ export default abstract class ScoredMatch extends Match {
 	protected getReceiver() {
 		const server = this.getServer();
 		assertIsDefined(server);
-		return getOpponentBy(server);
+		return this.participantsManagerOfDualMetric.getOpponentBy(server);
 	}
 
 	private getClassName = () => resolveValueOrProvider(this.ownConfig.className, this.scorer);
@@ -228,7 +229,7 @@ export default abstract class ScoredMatch extends Match {
 
 				const interpolation =
 					scoreLevel === ScoreLevel.Set && isDefined(index)
-						? getInterpolation(['addingToGamesOfSet', index], participant)
+						? getInterpolation(['addingToGamesOfSet', index], this.participantsManagerOfDualMetric, participant)
 						: EMPTY_HTML;
 
 				return `<td class="${getClassNames(className)}"><span class="${getClassNames('content')}">${ftValue}${interpolation}</span></td>`;
@@ -244,7 +245,7 @@ export default abstract class ScoredMatch extends Match {
 				</th>
 				${html}
 				${isServeIndicatorInOwnCol ? this.getServeTag(indicator => `<td>${indicator}</td>`, participant) : EMPTY_HTML}
-				${!this.isFinished() ? getInterpolation('extraTd', participant) : EMPTY_HTML}
+				${!this.isFinished() ? getInterpolation('extraTd', this.participantsManagerOfDualMetric, participant) : EMPTY_HTML}
 			</tr>`
 		);
 		return html;
@@ -255,7 +256,7 @@ export default abstract class ScoredMatch extends Match {
 				<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>
 				${this.getCols(({ scoreLevel: { name } }) => `<th scope="col">${upperFirst(name)}</th>`, isColsOfSetsSummarized)}
 				${isServeIndicatorInOwnCol ? this.getServeTag('<th scope="col">Serve</th>') : EMPTY_HTML}
-				${!this.isFinished() ? getInterpolation('extraTh') : EMPTY_HTML}
+				${!this.isFinished() ? getInterpolation('extraTh', this.participantsManagerOfDualMetric) : EMPTY_HTML}
 			</tr>
 		</thead>
 		<tbody>
@@ -394,7 +395,7 @@ export default abstract class ScoredMatch extends Match {
 			isServerWinner = server === participant;
 		executeWithServeInfo(server, receiver, isServerWinner);
 
-		DualMetric.setFocusedParticipant(participant);
+		this.participantsManagerOfDualMetric.focus(participant);
 		this.scorer.increment(ScoreLevel.Point);
 		executeAtLast();
 

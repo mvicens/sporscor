@@ -2,7 +2,7 @@ import ScoredMatch, { ScoreLevel } from '..';
 import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { Player } from '../../../participant';
-import { assertIsDefined, assertIsNumber, DualMetric, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined } from '../../../utils';
+import { assertIsDefined, assertIsNumber, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined } from '../../../utils';
 import { StatId, type InterpolationDefinition } from '../../utils';
 import { ADVANTAGE_SYMBOL, MIN_TO_WIN_GAME, MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_IN_GAME, SERVES_PER_POINT, TOTAL_GAMES_WHEN_TIE_BREAK_WON, TOTAL_OF_SETS } from './consts';
 import { getTotalGames, isInTieBreak } from './fns';
@@ -233,7 +233,7 @@ export default class TennisMatch extends ScoredMatch {
 			() => {
 				const receiver = this.getReceiver();
 
-				DualMetric.setFocusedParticipant(receiver);
+				this.participantsManagerOfDualMetric.focus(receiver);
 				if (this.scorer.isOnePointToWin()) {
 
 					this.stats.increase(StatId.PossibleBreakPoints, receiver);

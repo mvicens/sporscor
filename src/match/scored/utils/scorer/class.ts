@@ -1,12 +1,13 @@
 import type { Index, ItemOf, MapIterable } from '../../../../types';
 import { assertIsArray, assertIsDefined, assertIsInstanceOf, DeveloperError, DualMetric, ensureArray, identity, isArray, isDefined, isUndefined, resolveValueOrProvider } from '../../../../utils';
+import { ParticipantsManagerOfDualMetric } from '../../../../utils/dual-metric';
 import type { OnNewByScoreLevel } from '../../types';
 import { SHOULD_CONTINUE, SHOULD_INTERRUPT } from './consts';
 import { ScoreLevel } from './enums';
 import type { Data, DataItem, IsHigherScoreLevelNew, LoopCb, NestedPoints, NestedPointsItem, OnFinish, ScoreLevelConfig } from './types';
 
 export default class Scorer {
-	constructor(scoreLevelsConfig: Array<ScoreLevelConfig>, onFinish: OnFinish, onNewByScoreLevel: OnNewByScoreLevel) {
+	constructor(scoreLevelsConfig: Array<ScoreLevelConfig>, participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric, onFinish: OnFinish, onNewByScoreLevel: OnNewByScoreLevel) {
 		if (scoreLevelsConfig[0]?.scoreLevel !== ScoreLevel.Point)
 			throw new DeveloperError('1st score level must be point\'s');
 
@@ -15,7 +16,7 @@ export default class Scorer {
 			{
 				...item,
 				transformer: item.transformer ?? identity,
-				qty: new DualMetric(0),
+				qty: new DualMetric(participantsManagerOfDualMetric, 0),
 				detailedQty: []
 			}
 		]);

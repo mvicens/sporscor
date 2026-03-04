@@ -1,9 +1,18 @@
 import { SPORTS } from './consts';
 import { Player, Team, TennisMatch } from './lib';
-import { currentInstance } from './vars';
+import sectionHtmlContent from './section.html?raw';
 
 function getHtmlElement<T extends HTMLElement>(selectors: string) {
 	const value = document.querySelector<T>(selectors);
+	assertIsNonNullable(value);
+	return value;
+}
+
+function toElement(htmlContent: string) {
+	const
+		domParser = new DOMParser(),
+		document = domParser.parseFromString(htmlContent, 'text/html'),
+		value = document.body.firstElementChild;
 	assertIsNonNullable(value);
 	return value;
 }
@@ -18,38 +27,34 @@ export function setHtmlContent(selectors: string, value: string, onFinish?: Void
 	onFinish?.();
 }
 
-function clearHtmlContent(selectors: string) {
-	setHtmlContent(selectors, '');
-}
-
-export function buildSelector(onFinish: VoidFunction) {
-	const elem = getHtmlElement('select');
-	SPORTS.forEach(({ name, symbol }) => {
-		elem.innerHTML += `<option value="${name}">${symbol} ${name}</option>`;
+export function buildDropdown() {
+	const elem = getHtmlElement('.dropdown-menu');
+	SPORTS.forEach(item => {
+		const childElem = toElement(`<li><a class="dropdown-item" href="#">${item.name}</a></li>`);
+		childElem.addEventListener('click', () => { addChoice(item); });
+		elem.appendChild(childElem);
 	});
-	elem.addEventListener('change', () => { buildSelection(); });
-
-	onFinish();
 }
 
-const isTennisMatch = (value: unknown): value is typeof TennisMatch => value === TennisMatch;
-export function buildSelection() {
-	const
-		name = getHtmlElement<HTMLSelectElement>('select').value,
-		Class = SPORTS.find(({ name: searchedName }) => searchedName === name)?.class;
-	assertIsNonNullable(Class);
+const
+	getSelectors = (index: number, className: string) => `.card:nth-child(${index + 1}) .${className}`,
+	isTennisMatch = (value: unknown): value is typeof TennisMatch => value === TennisMatch;
+export function addChoice(item: typeof SPORTS[number]) {
+	const sectionElement = toElement(sectionHtmlContent);
 
-	clearHtmlContent('#scoreboard');
-	clearHtmlContent('#stats');
-	clearHtmlContent('#panel');
+	const titleElement = sectionElement.querySelector('.card-header');
+	assertIsNonNullable(titleElement);
+	titleElement.textContent = item.name;
 
+	const index = document.querySelectorAll('.card').length;
+
+	getHtmlElement('main').appendChild(sectionElement);
+
+	const { class: Class } = item;
 	let instance: InstanceType<typeof Class>;
 	const onChange = () => {
-		if (currentInstance.value !== instance)
-			return;
-
-		setHtmlContent('#scoreboard', instance.getScoreboard());
-		setHtmlContent('#stats', instance.getStats());
+		setHtmlContent(getSelectors(index, 'scoreboard'), instance.getScoreboard());
+		setHtmlContent(getSelectors(index, 'stats'), instance.getStats());
 	};
 	if (isTennisMatch(Class)) {
 		const
@@ -62,9 +67,7 @@ export function buildSelection() {
 			teamTwo = new Team('Team 2');
 		instance = new Class(teamOne, teamTwo, onChange);
 	}
-	getHtmlElement('#panel').append(instance.getPanel());
-
-	currentInstance.value = instance;
+	getHtmlElement(getSelectors(index, 'panel')).append(instance.getPanel());
 }
 
 const isNonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;

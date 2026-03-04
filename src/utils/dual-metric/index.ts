@@ -1,4 +1,6 @@
 import DualMetric from './class';
 export default DualMetric;
 
-export { getOpponentBy, isParticipantOne, verifyParticipantIsRegistered as verifyParticipantIsRegisteredInDualMetric } from './fns';
+export { getParticipantsManager as getParticipantsManagerOfDualMetric } from './fns';
+
+export type { ParticipantsManager as ParticipantsManagerOfDualMetric } from './types';
