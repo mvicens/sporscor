@@ -17,10 +17,6 @@ export type NonNull<T = unknown> = T & ({} | undefined);
 export type Nullable = null | undefined;
 export type OrNullable<T> = T | Nullable;
 
-export type OneOrMany<T> = T | Array<T>;
-
-export type ItemOf<A> = A extends ReadonlyArray<infer T> ? T | undefined : undefined;
-
 export type Callback<T extends Args, U = void> = (...args: T) => U;
 
 type Entry<K, V> = [key: K, value: V];
@@ -29,9 +25,7 @@ export type MapIterable<K, V> = Array<Entry<K, V>>;
 type Provider<T, U extends Args> = (...args: U) => T;
 export type ValueOrProvider<T, U> = T | Provider<T, [U]>;
 
-type EventKey = string | number;
-type EventListener<T extends Args> = Callback<T>;
-export type EventListenersBy<K extends EventKey, T extends Args> = Partial<Record<K, OneOrMany<EventListener<T>>>>;
+export type EventListener<T extends Args = []> = Callback<T>;
 
 export type Msg = Show<string>;
 

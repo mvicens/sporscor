@@ -1,5 +1,5 @@
 export enum ScoreLevel {
-	Point = 'point',
+	Set = 'set',
 	Game = 'game',
-	Set = 'set'
+	Point = 'point'
 }

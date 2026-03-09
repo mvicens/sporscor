@@ -26,11 +26,17 @@ export default class TennisMatch extends ScoredMatch {
 			participants: [playerOne, playerTwo],
 			onChange,
 
-			scoreLevelsConfig: [
+			scoreLevelDefinitions: [
+				TOTAL_OF_SETS,
+				{
+					scoreLevel: ScoreLevel.Game,
+					target: MIN_TO_WIN_SET,
+					shouldWinByTwo: scorer => getTotalGames(scorer) !== TOTAL_GAMES_WHEN_TIE_BREAK_WON
+				},
 				{
 					scoreLevel: ScoreLevel.Point,
 					target: scorer => !isInTieBreak(scorer) ? MIN_TO_WIN_GAME : MIN_TO_WIN_TIE_BREAK,
-					withLead: true,
+					shouldWinByTwo: true,
 					transformer: (points, opponentPoints, scorer) => {
 						if (isInTieBreak(scorer))
 							return points;
@@ -46,35 +52,11 @@ export default class TennisMatch extends ScoredMatch {
 						assertIsDefined(lastPointInGame);
 						return lastPointInGame;
 					}
-				},
-				{
-					scoreLevel: ScoreLevel.Game,
-					target: MIN_TO_WIN_SET,
-					withLead: scorer => getTotalGames(scorer) !== TOTAL_GAMES_WHEN_TIE_BREAK_WON
-				},
-				TOTAL_OF_SETS
-			],
-			serve: {
-				qtyPerPoint: SERVES_PER_POINT,
-				getServer: scorer => {
-					// Games totals
-					const
-						previous = scorer.getBy(ScoreLevel.Set).detailedQty
-							.map(item => item.getTotal())
-							.reduce((accumulator, currentValue) => accumulator + currentValue, 0),
-						current = getTotalGames(scorer);
-					let absolute = previous + current;
-
-					if (isInTieBreak(scorer))
-						absolute += Math.ceil(scorer.getBy(ScoreLevel.Point).qty.getTotal() / 2);
-
-					const isOpeningServer = isEvenNumber(absolute);
-					return isOpeningServer;
 				}
-			},
-			onNewByScoreLevel: {
-				[ScoreLevel.Game]: (scorer, isSetNew) => {
-					if (isSetNew)
+			],
+			onIncrement: {
+				[ScoreLevel.Game]: (scorer, isSetIncremented) => {
+					if (isSetIncremented)
 						return;
 
 					const
@@ -82,6 +64,18 @@ export default class TennisMatch extends ScoredMatch {
 						shouldGoToRest = isOddNumber(totalGames);
 					if (shouldGoToRest)
 						this.goToRest(RestType.breakPerPhase);
+				}
+			},
+
+			serve: {
+				qtyPerPoint: SERVES_PER_POINT,
+				getServer: scorer => {
+					let total = scorer.getCountsTotalOf(ScoreLevel.Game);
+					if (isInTieBreak(scorer))
+						total += Math.ceil(scorer.getLastCountOf(ScoreLevel.Point).getTotal() / 2);
+
+					const isOpeningServer = isEvenNumber(total);
+					return isOpeningServer;
 				}
 			},
 			className: scorer => isInTieBreak(scorer) ? 'isInTieBreak' : null
@@ -105,9 +99,9 @@ export default class TennisMatch extends ScoredMatch {
 		const
 			interpolationDefinition: InterpolationDefinition = [],
 			{ scorer } = this;
-		scorer.getBy(ScoreLevel.Set).detailedQty.forEach((qty, indexOfSet) => {
+		scorer.getConcludedDetailedCountsOf(ScoreLevel.Set).forEach((qty, indexOfSet) => {
 			if (qty.getTotal() === TOTAL_GAMES_WHEN_TIE_BREAK_WON) {
-				const lastGamePoints = scorer.getNestedPoints(indexOfSet, -1);
+				const lastGamePoints = scorer.getCountBy(indexOfSet, -1);
 				interpolationDefinition.push([
 					['addingToGamesOfSet', indexOfSet],
 					player => {
@@ -234,7 +228,7 @@ export default class TennisMatch extends ScoredMatch {
 				const receiver = this.getReceiver();
 
 				this.participantsManagerOfDualMetric.focus(receiver);
-				if (this.scorer.isOnePointToWin()) {
+				if (this.scorer.isAlmostWon()) {
 
 					this.stats.increase(StatId.PossibleBreakPoints, receiver);
 					this.hasPossibleBreakPoint = true;

@@ -29,36 +29,24 @@ export default class VolleyballMatch extends ScoredMatch {
 				isDoneable: () => this.isSomePointDone
 			},
 
-			scoreLevelsConfig: [
+			scoreLevelDefinitions: [
+				TOTAL_OF_SETS,
 				{
 					scoreLevel: ScoreLevel.Point,
 					target: scorer => !isInTieBreak(scorer) ? MIN_TO_WIN_SET : MIN_TO_WIN_TIE_BREAK,
-					withLead: true
-				},
-				TOTAL_OF_SETS
-			],
-			serve: {
-				qtyPerPoint: SERVES_PER_POINT,
-				getServer: () => {
-					if (this.isLastPointWon.every(isFalse)) {
-						const isOpeningServer = true;
-						return isOpeningServer;
-					}
-
-					const team = this.isLastPointWon.getOfOne() ? teamOne : teamTwo;
-					return team;
+					shouldWinByTwo: true
 				}
-			},
-			onNewByScoreLevel: {
-				[ScoreLevel.Point]: (scorer, isSetNew) => {
-					if (isSetNew)
+			],
+			onIncrement: {
+				[ScoreLevel.Point]: (scorer, isSetIncremented) => {
+					if (isSetIncremented)
 						return;
 
 					this.isSomePointDone = true;
 
 					if (!isInTieBreak(scorer)) {
 						const
-							pointsMax = scorer.getBy(ScoreLevel.Point).qty.getMax(),
+							pointsMax = scorer.getLastCountOf(ScoreLevel.Point).getMax(),
 							shouldDo = this.pendingPointsMaxToGoToRest.has(pointsMax);
 						if (shouldDo) {
 							this.goToRest(RestType.breakPerPoint);
@@ -69,6 +57,19 @@ export default class VolleyballMatch extends ScoredMatch {
 				[ScoreLevel.Set]: () => {
 					this.resetTimeouts();
 					this.resetPendingPointsMaxToGoToRest();
+				}
+			},
+
+			serve: {
+				qtyPerPoint: SERVES_PER_POINT,
+				getServer: () => {
+					if (this.isLastPointWon.every(isFalse)) {
+						const isOpeningServer = true;
+						return isOpeningServer;
+					}
+
+					const team = this.isLastPointWon.getOfOne() ? teamOne : teamTwo;
+					return team;
 				}
 			}
 		});

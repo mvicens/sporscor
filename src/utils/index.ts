@@ -1,4 +1,4 @@
-export { assertIsArray, assertIsDefined, assertIsInstanceOf, assertIsNonNull, assertIsNonNullable, assertIsNumber } from './assertions';
+export { assertIsDefined, assertIsNonNull, assertIsNonNullable, assertIsNumber, assertIsRecord } from './assertions';
 
 export { upperFirst } from './casing';
 
@@ -9,11 +9,11 @@ export { DualMetric };
 
 export { getParticipantsManagerOfDualMetric, type ParticipantsManagerOfDualMetric } from './dual-metric';
 
-export { ensureArray, ensureNumber, ensureString } from './ensures';
+export { ensureNumber, ensureString } from './ensures';
 
 export { DeveloperError, DeveloperTypeError } from './errors';
 
-export { isArray, isBoolean, isDefined, isFalse, isFunction, isNonNull, isNonNullable, isNull, isNumber, isString, isTruth, isUndefined } from './guards';
+export { isArray, isBoolean, isDefined, isFalse, isFunction, isInstanceOf, isNonNull, isNonNullable, isNull, isNumber, isRecord, isString, isTruth, isUndefined } from './guards';
 
 export { getClassNames, getLightedElem } from './html';
 

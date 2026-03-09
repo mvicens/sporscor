@@ -4,23 +4,15 @@ import Match, { RestType } from '..';
 import { EMPTY_HTML } from '../../consts';
 import type { AnyParticipant } from '../../participant';
 import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
-import { assertIsDefined, assertIsNumber, DualMetric, ensureArray, getClassNames, getLightedElem, getOrdinal, info, isBoolean, isDefined, isNumber, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsOddNumber, verifyIsPositiveInteger, warn } from '../../utils';
+import { assertIsDefined, assertIsNumber, DualMetric, getClassNames, getLightedElem, getOrdinal, identity, info, isBoolean, isDefined, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
 import type { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
-import { ScoreLevel, Scorer, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
+import { OnIncrement, ScoreLevel, Scorer, SHOULD_CONTINUE_SCORER_LOOP, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 
 import './css/index.css';
 
 export default abstract class ScoredMatch extends Match {
 	private verifyConfigIsOk(config: Config) {
-		config.scoreLevelsConfig.forEach(item => {
-			if (!isNumber(item))
-				return;
-
-			const totalOfSets = item;
-			verifyIsPositiveInteger(totalOfSets);
-			verifyIsOddNumber(totalOfSets);
-		});
 		verifyIsPositiveInteger(config.serve.qtyPerPoint);
 	}
 	constructor(private readonly ownConfig: Config) {
@@ -28,38 +20,21 @@ export default abstract class ScoredMatch extends Match {
 
 		this.verifyConfigIsOk(ownConfig);
 
-		const scoreLevelsConfig = ownConfig.scoreLevelsConfig.map(item => {
-			if (!isNumber(item))
-				return item;
-
-			const
-				totalOfSets = item,
-				minToWinMatch = (totalOfSets + 1) / 2;
-			item = {
-				scoreLevel: ScoreLevel.Set,
-				target: minToWinMatch,
-				withLead: false
-			};
-			return item;
+		const onIncrement: OnIncrement = [
+			ownConfig.onIncrement,
+			{
+				[ScoreLevel.Point]: () => { this.resetServes(); },
+				[ScoreLevel.Set]: () => { this.goToRest(RestType.breakPerPhase); },
+			}
+		];
+		this.scorer = new Scorer({
+			scoreLevelDefinitions: ownConfig.scoreLevelDefinitions,
+			participantsManagerOfDualMetric: this.participantsManagerOfDualMetric,
+			events: {
+				onIncrement,
+				onFinish: () => { this.finish(); }
+			}
 		});
-
-		const { onNewByScoreLevel = {} } = ownConfig;
-		function add(scoreLevel: ScoreLevel, newOnNewScoreLevel: VoidFunction) {
-			let oldOnNewScoreLevel = onNewByScoreLevel[scoreLevel] ?? [];
-			oldOnNewScoreLevel = ensureArray(oldOnNewScoreLevel);
-			oldOnNewScoreLevel.push(newOnNewScoreLevel);
-
-			onNewByScoreLevel[scoreLevel] = oldOnNewScoreLevel;
-		}
-		add(ScoreLevel.Point, () => { this.resetServes(); });
-		add(ScoreLevel.Set, () => { this.goToRest(RestType.breakPerPhase); });
-
-		this.scorer = new Scorer(
-			scoreLevelsConfig,
-			this.participantsManagerOfDualMetric,
-			() => { this.finish(); },
-			onNewByScoreLevel
-		);
 
 		this.stats.makeAvailable(
 			StatId.ConsecutivePointsWon, StatId.MostConsecutivePointsWon,
@@ -100,27 +75,27 @@ export default abstract class ScoredMatch extends Match {
 	private getCols(cb: Callback<[GetColsCbArg], Html>, isColsOfSetsSummarized: IsColsOfSetsSummarized, participant?: AnyParticipant) {
 		let html = EMPTY_HTML;
 		const { scorer } = this;
-		scorer.forReversedEach(dataItem => {
+		scorer.forEachScoreLevelDefinition(item => {
 			const
-				{ scoreLevel } = dataItem,
+				{ scoreLevel } = item,
 				isPointScoreLevel = scoreLevel === ScoreLevel.Point;
 
 			if (isPointScoreLevel &&
 				(this.isPreparing() || this.isAtBreakPerPhase()))
-				return; // Void due to last loop
+				return SHOULD_CONTINUE_SCORER_LOOP; // Exit due to last loop
 
 			const isScoreLevelOfSet = scoreLevel === ScoreLevel.Set;
 
 			if (this.isFinished() && !isScoreLevelOfSet)
 				return SHOULD_INTERRUPT_SCORER_LOOP;
 
-			const { target } = dataItem;
+			const { target } = item;
 			function getQty(qty: DualMetric, isOpponent = false) {
 				if (isUndefined(participant))
 					return NaN;
 
 				const
-					{ transformer } = dataItem,
+					{ transformer = identity } = item,
 					focused = qty.getBy(participant),
 					opponent = qty.getOpponentBy(participant);
 				return isOpponent
@@ -140,7 +115,9 @@ export default abstract class ScoredMatch extends Match {
 
 			const isSummarizedColShown = !isScoreLevelOfSet || isColsOfSetsSummarized;
 			if (isSummarizedColShown) {
-				const isConcluded = isScoreLevelOfSet && this.wasFinished;
+				const
+					isConcluded = isScoreLevelOfSet && this.wasFinished,
+					lastCount = scorer.getLastCountOf(scoreLevel);
 				html += cb({
 					scoreLevel: {
 						scoreLevel,
@@ -148,7 +125,7 @@ export default abstract class ScoredMatch extends Match {
 						name: pluralize(scoreLevel),
 						isConcluded
 					},
-					values: getValues(dataItem.qty)
+					values: getValues(lastCount)
 				});
 			}
 
@@ -156,7 +133,7 @@ export default abstract class ScoredMatch extends Match {
 				isColsOfSetsDetailed = !isColsOfSetsSummarized,
 				isDetailedColOfSetShown = isScoreLevelOfSet && isColsOfSetsDetailed;
 			if (isDetailedColOfSetShown)
-				dataItem.detailedQty.forEach((qty, i) => {
+				scorer.getConcludedDetailedCountsOf(scoreLevel).forEach((qty, i) => {
 					html += cb({
 						scoreLevel: {
 							scoreLevel,
@@ -169,7 +146,7 @@ export default abstract class ScoredMatch extends Match {
 					});
 				});
 
-			return;
+			return SHOULD_CONTINUE_SCORER_LOOP;
 		});
 		return html;
 	}
@@ -396,7 +373,7 @@ export default abstract class ScoredMatch extends Match {
 		executeWithServeInfo(server, receiver, isServerWinner);
 
 		this.participantsManagerOfDualMetric.focus(participant);
-		this.scorer.increment(ScoreLevel.Point);
+		this.scorer.increment();
 		executeAtLast();
 
 		this.dispatchEvent();

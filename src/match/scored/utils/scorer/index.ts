@@ -1,6 +1,6 @@
 import Scorer from './class';
 export default Scorer;
 
-export { SHOULD_INTERRUPT as SHOULD_INTERRUPT_SCORER_LOOP } from './consts';
+export { SHOULD_CONTINUE as SHOULD_CONTINUE_SCORER_LOOP, SHOULD_INTERRUPT as SHOULD_INTERRUPT_SCORER_LOOP } from './consts';
 export { ScoreLevel } from './enums';
-export type { IsHigherScoreLevelNew, ScoreLevelConfig as ScoreLevelConfigOfScorer, ValueOrProviderFromScorer } from './types';
+export type { OnIncrement, ScoreLevelDefinition, ScoreLevelDefinitions } from './types';

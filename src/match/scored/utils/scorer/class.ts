@@ -1,156 +1,257 @@
-import type { Index, ItemOf, MapIterable } from '../../../../types';
-import { assertIsArray, assertIsDefined, assertIsInstanceOf, DeveloperError, DualMetric, ensureArray, identity, isArray, isDefined, isUndefined, resolveValueOrProvider } from '../../../../utils';
-import { ParticipantsManagerOfDualMetric } from '../../../../utils/dual-metric';
-import type { OnNewByScoreLevel } from '../../types';
+import type { Callback, Index, MapIterable } from '../../../../types';
+import { assertIsDefined, assertIsNumber, assertIsRecord, DeveloperError, DualMetric, isDefined, isNumber, ParticipantsManagerOfDualMetric, resolveValueOrProvider, verifyIsOddNumber, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_CONTINUE, SHOULD_INTERRUPT } from './consts';
 import { ScoreLevel } from './enums';
-import type { Data, DataItem, IsHigherScoreLevelNew, LoopCb, NestedPoints, NestedPointsItem, OnFinish, ScoreLevelConfig } from './types';
+import { assertIsCount, assertIsCountHierarchy, isCountHierarchy } from './fns';
+import type { Config, Count, CountHierarchy, CountHierarchyChild, DefinitionByScoreLevel, IsHigherScoreLevelIncremented, LoopCb, ScoreLevelDefinition } from './types';
 
 export default class Scorer {
-	constructor(scoreLevelsConfig: Array<ScoreLevelConfig>, participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric, onFinish: OnFinish, onNewByScoreLevel: OnNewByScoreLevel) {
-		if (scoreLevelsConfig[0]?.scoreLevel !== ScoreLevel.Point)
-			throw new DeveloperError('1st score level must be point\'s');
+	#verifyConfigIsOk(config: Config) {
+		const { scoreLevelDefinitions } = config;
 
-		const data: MapIterable<ScoreLevel, DataItem> = scoreLevelsConfig.map(item => [
-			item.scoreLevel,
-			{
-				...item,
-				transformer: item.transformer ?? identity,
-				qty: new DualMetric(participantsManagerOfDualMetric, 0),
-				detailedQty: []
-			}
-		]);
-		this.#data = new Map(data);
+		const firstScoreLevelDefinition = scoreLevelDefinitions.at(0);
+		assertIsNumber(firstScoreLevelDefinition);
+		const totalOfSets = firstScoreLevelDefinition;
+		verifyIsPositiveInteger(totalOfSets);
+		verifyIsOddNumber(totalOfSets);
 
-		this.#onFinish = onFinish;
+		const lastScoreLevelDefinition = scoreLevelDefinitions.at(-1);
+		assertIsRecord(lastScoreLevelDefinition);
+		if (lastScoreLevelDefinition.scoreLevel !== ScoreLevel.Point)
+			throw new DeveloperError('Last score level definition must be point\'s');
+	}
+	constructor(config: Config) {
+		this.#verifyConfigIsOk(config);
 
-		this.#onNewByScoreLevel = onNewByScoreLevel;
+		const
+			scoreLevels: Array<ScoreLevel> = [],
+			definitionByScoreLevel: MapIterable<ScoreLevel, ScoreLevelDefinition> = config.scoreLevelDefinitions.map(item => {
+				if (isNumber(item)) {
+					const
+						totalOfSets = item,
+						target = (totalOfSets + 1) / 2;
+					item = {
+						scoreLevel: ScoreLevel.Set,
+						target,
+						shouldWinByTwo: false
+					};
+				}
+
+				scoreLevels.push(item.scoreLevel);
+
+				return [item.scoreLevel, item];
+			});
+
+		this.#definitionByScoreLevel = new Map(definitionByScoreLevel);
+
+		this.#participantsManagerOfDualMetric = config.participantsManagerOfDualMetric;
+
+		this.#scoreLevels = scoreLevels;
+
+		const mainCountHierarchy = this.#getBuiltCountHierarchyChildOf(ScoreLevel.Set);
+		assertIsCountHierarchy(mainCountHierarchy);
+		this.mainCountHierarchy = mainCountHierarchy;
+
+		this.#events = config.events;
 	}
 
-	#data: Data;
+	#definitionByScoreLevel: DefinitionByScoreLevel;
 
-	#nestedPoints: NestedPoints = [];
+	#participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric;
+	#scoreLevels: Array<ScoreLevel>;
+	mainCountHierarchy: CountHierarchy;
 
-	#onFinish: OnFinish;
+	#events: Config['events'];
 
-	#onNewByScoreLevel: OnNewByScoreLevel;
+	#isWon(scoreLevel: ScoreLevel, getCount?: Callback<[Count], Count>) {
+		const scoreLevelDefinition = this.#getScoreLevelDefinitionOf(scoreLevel);
 
-	#isWon(item: DataItem) {
-		const { qty } = item;
+		const
+			lastCount = this.getLastCountOf(scoreLevel),
+			count = isDefined(getCount)
+				? getCount(lastCount)
+				: lastCount;
 
-		const target = resolveValueOrProvider(item.target, this);
-		if (qty.isLessThan(target))
+		const target = resolveValueOrProvider(scoreLevelDefinition.target, this);
+		if (count.isLessThan(target))
 			return false;
 
 		const
-			withLead = resolveValueOrProvider(item.withLead, this),
-			result = !withLead || qty.isDiffAtLeast(2);
+			shouldWinByTwo = resolveValueOrProvider(scoreLevelDefinition.shouldWinByTwo, this),
+			result = !shouldWinByTwo || count.isDiffAtLeast(2);
 		return result;
 	}
 
-	isOnePointToWin() {
-		const
-			item = this.getBy(ScoreLevel.Point),
-			hypotheticalQty = item.qty.clone();
-		hypotheticalQty.increment();
-		const hypotheticalItem = {
-			...item,
-			qty: hypotheticalQty
-		};
-		return this.#isWon(hypotheticalItem);
-	}
-
-	getBy(scoreLevel: ScoreLevel) {
-		const item = this.#data.get(scoreLevel);
-		assertIsDefined(item);
-		return item;
-	}
-
-	getNestedPoints(...indexes: Array<Index>) {
-		let result: NestedPointsItem = this.#nestedPoints;
-		indexes.forEach(item => {
-			assertIsArray(result);
-			const otherResult = result.at(item); // Possible negative index
-			assertIsDefined(otherResult);
-			result = otherResult;
+	isAlmostWon = // One point to win
+		() => this.#isWon(ScoreLevel.Point, count => {
+			const result = count.clone();
+			result.increment(); // Hypothetical
+			return result;
 		});
-		assertIsInstanceOf(result, DualMetric);
+
+	#getScoreLevelDefinitionOf(value: ScoreLevel) {
+		const result = this.#definitionByScoreLevel.get(value);
+		assertIsDefined(result);
 		return result;
 	}
 
-	#incrementPoint() {
-		let previousQty: ItemOf<DataItem['detailedQty']>;
-		this.forEach(item => {
-			if (isDefined(previousQty))
-				item.detailedQty.push(previousQty);
+	#getNewCount = (): Count => new DualMetric(this.#participantsManagerOfDualMetric, 0);
+	#getBuiltCountHierarchyChildOf(scoreLevel: ScoreLevel): CountHierarchyChild {
+		const lowerScoreLevel = this.#getLowerTo(scoreLevel);
+		if (isDefined(lowerScoreLevel))
+			return {
+				summarized: this.#getNewCount(),
+				detailed: [this.#getBuiltCountHierarchyChildOf(lowerScoreLevel)]
+			};
+		return this.#getNewCount();
+	}
 
-			const
-				{ scoreLevel, qty } = item,
-				dispatchEvent = (isHigherScoreLevelNew: IsHigherScoreLevelNew) => {
-					const onNewScoreLevel = this.#onNewByScoreLevel[scoreLevel];
-					if (isDefined(onNewScoreLevel))
-						ensureArray(onNewScoreLevel).forEach(item => {
-							item(this, isHigherScoreLevelNew);
-						});
-				};
+	#getHigherTo(scoreLevel: ScoreLevel) {
+		let result: undefined | ScoreLevel;
+		this.#forEachScoreLevel(item => {
+			if (item === scoreLevel)
+				return SHOULD_INTERRUPT;
 
-			qty.increment();
+			result = item;
+			return SHOULD_CONTINUE;
+		});
+		assertIsDefined(result); // Fails if score level is set
+		return result;
+	}
 
-			if (scoreLevel === ScoreLevel.Point) {
-				let
-					container: NestedPoints = this.#nestedPoints,
-					content: NestedPoints | NestedPointsItem,
-					index: Index;
-				this.forReversedEach(({ scoreLevel, qty }) => {
-					if (scoreLevel !== ScoreLevel.Point) {
-						if (isArray(content))
-							container = content;
-						index = qty.getTotal();
-						let otherContent = container[index];
-						if (isUndefined(otherContent))
-							otherContent = container[index] = [];
-						content = otherContent;
-					} else
-						container[index] = qty.clone();
-				});
-			}
-
-			const isWon = this.#isWon(item);
-			if (!isWon) {
-				dispatchEvent(!SHOULD_INTERRUPT);
+	#getLowerTo(scoreLevel: ScoreLevel) {
+		let
+			result: undefined | ScoreLevel,
+			isNext = false;
+		this.#forEachScoreLevel(item => {
+			if (isNext) {
+				result = item;
 				return SHOULD_INTERRUPT;
 			}
 
-			if (scoreLevel !== ScoreLevel.Set) {
-				previousQty = qty.clone();
-
-				qty.resetAll();
-
-				dispatchEvent(!SHOULD_CONTINUE);
-				return SHOULD_CONTINUE;
-			} else
-				this.#onFinish(); // No return nor event dispatching due to last loop
-
-			return;
+			if (item === scoreLevel)
+				isNext = true;
+			return SHOULD_CONTINUE;
 		});
-	}
-	increment(scoreLevel: ScoreLevel) {
-		if (scoreLevel === ScoreLevel.Point)
-			this.#incrementPoint();
-		else
-			for (
-				const getQty = () => this.getBy(scoreLevel).qty.get(), initial = getQty();
-				initial === getQty();
-				this.#incrementPoint()
-			);
+		return result;
 	}
 
-	#forEachBy(cb: LoopCb, isReversed = false) {
-		const data = Array.from(this.#data.values());
-		if (isReversed)
-			data.reverse();
+	#getLastCountHierarchyChildOf(scoreLevel: ScoreLevel): CountHierarchyChild {
+		let result: CountHierarchyChild = this.mainCountHierarchy;
+		this.#forEachScoreLevel(item => {
+			if (item === scoreLevel)
+				return SHOULD_INTERRUPT;
 
-		for (const item of data) {
+			assertIsCountHierarchy(result);
+			const newResult = result.detailed.at(-1);
+			assertIsDefined(newResult);
+			result = newResult;
+			return SHOULD_CONTINUE;
+		});
+		return result;
+	}
+
+	getLastCountOf(scoreLevel: ScoreLevel) {
+		const lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(scoreLevel);
+		if (isCountHierarchy(lastCountHierarchyChild)) {
+			const lastCountHierarchy = lastCountHierarchyChild;
+			return lastCountHierarchy.summarized;
+		}
+		return lastCountHierarchyChild;
+	}
+
+	getCountBy(...indexes: Array<Index>) {
+		let result: CountHierarchyChild = this.mainCountHierarchy;
+		indexes.forEach(item => {
+			assertIsCountHierarchy(result);
+			const newResult = result.detailed.at(item);
+			assertIsDefined(newResult);
+			result = newResult;
+		});
+		assertIsCount(result);
+		return result;
+	}
+
+	getConcludedDetailedCountsOf(scoreLevel: ScoreLevel) {
+		const lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(scoreLevel);
+		assertIsCountHierarchy(lastCountHierarchyChild);
+		const lastCountHierarchy = lastCountHierarchyChild;
+
+		const
+			detailedCounts = lastCountHierarchy.detailed.map(item => {
+				assertIsCountHierarchy(item);
+				return item.summarized;
+			}),
+			concludedTotal = lastCountHierarchy.summarized.getTotal();
+		return detailedCounts.slice(0, concludedTotal);
+	}
+
+	getCountsTotalOf(scoreLevel: ScoreLevel) {
+		const
+			higherScoreLevel = this.#getHigherTo(scoreLevel),
+			lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(higherScoreLevel);
+		assertIsCountHierarchy(lastCountHierarchyChild);
+		const lastCountHierarchy = lastCountHierarchyChild;
+
+		return lastCountHierarchy.detailed
+			.map(item => {
+				assertIsCountHierarchy(item);
+				return item.summarized.getTotal();
+			})
+			.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+	}
+
+	#increment(scoreLevel: ScoreLevel) {
+		const
+			lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(scoreLevel),
+			count = isCountHierarchy(lastCountHierarchyChild)
+				? lastCountHierarchyChild.summarized
+				: lastCountHierarchyChild;
+		count.increment();
+	}
+	increment() { // Point
+		this.#forEachScoreLevelDefinition(
+			item => {
+				const
+					{ scoreLevel } = item,
+					dispatchEvent = (isHigherScoreLevelIncremented: IsHigherScoreLevelIncremented) => {
+						this.#events.onIncrement.forEach(eventListenerByScoreLevel => {
+							const eventListener = eventListenerByScoreLevel[scoreLevel];
+							if (isDefined(eventListener))
+								eventListener(this, isHigherScoreLevelIncremented);
+						});
+					};
+
+				this.#increment(scoreLevel);
+
+				const isWon = this.#isWon(scoreLevel);
+				if (!isWon) {
+					dispatchEvent(false);
+
+					const lowerScoreLevel = this.#getLowerTo(scoreLevel);
+					if (isDefined(lowerScoreLevel)) {
+						const lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(scoreLevel);
+						if (isCountHierarchy(lastCountHierarchyChild)) {
+							const lastCountHierarchy = lastCountHierarchyChild;
+							lastCountHierarchy.detailed.push(this.#getBuiltCountHierarchyChildOf(lowerScoreLevel));
+						}
+					}
+
+					return SHOULD_INTERRUPT;
+				}
+
+				if (scoreLevel !== ScoreLevel.Set)
+					dispatchEvent(true);
+				else
+					this.#events.onFinish(); // No event dispatching due to last loop
+				return SHOULD_CONTINUE;
+			},
+			true // From point until set
+		);
+	}
+
+	#forEach<T>(items: Array<T>, cb: LoopCb<T>) {
+		for (const item of items) {
 			const shouldInterrupt = cb(item);
 			if (shouldInterrupt)
 				break;
@@ -158,10 +259,20 @@ export default class Scorer {
 			// 	continue;
 		}
 	}
-	forEach(cb: LoopCb) {
-		this.#forEachBy(cb);
+
+	#forEachScoreLevel(cb: LoopCb<ScoreLevel>, shouldReverse = false) {
+		const scoreLevelDefinitions = Array.from(this.#definitionByScoreLevel.values());
+		if (shouldReverse)
+			scoreLevelDefinitions.reverse();
+		this.#forEach(this.#scoreLevels, cb);
 	}
-	forReversedEach(cb: LoopCb) { // Point as last
-		this.#forEachBy(cb, true);
+
+	#forEachScoreLevelDefinition(cb: LoopCb<ScoreLevelDefinition>, shouldReverse = false) {
+		const scoreLevelDefinitions = Array.from(this.#definitionByScoreLevel.values());
+		if (shouldReverse)
+			scoreLevelDefinitions.reverse();
+		this.#forEach(scoreLevelDefinitions, cb);
 	}
+
+	forEachScoreLevelDefinition(cb: LoopCb<ScoreLevelDefinition>) { this.#forEachScoreLevelDefinition(cb); }
 }

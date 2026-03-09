@@ -1,4 +1,4 @@
-import type { Defined, NonNull, Nullable } from '../types';
+import type { Class, Defined, NonNull, Nullable } from '../types';
 
 export const isString = (value: unknown): value is string => typeof value === 'string';
 
@@ -11,6 +11,10 @@ export const isFalse = (value: unknown): value is false => value === false;
 export const isFunction = (value: unknown): value is Function => typeof value === 'function';
 
 export const isArray = (value: unknown): value is Array<unknown> => Array.isArray(value);
+
+export const isRecord = (value: unknown): value is Record<PropertyKey, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+export const isInstanceOf = <T extends Class>(value: unknown, targetClass: T): value is InstanceType<T> => value instanceof targetClass;
 
 export const isUndefined = (value: unknown): value is undefined => value === undefined;
 

@@ -1,7 +1,12 @@
 import type { MatchConfig } from '..';
 import type { AnyParticipant } from '../../participant';
-import type { Callback, ClassName, EventListenersBy, Index, Show } from '../../types';
-import { type IsHigherScoreLevelNew, ScoreLevel, type ScoreLevelConfigOfScorer, Scorer, type ValueOrProviderFromScorer } from './utils';
+import type { Callback, ClassName, Index, Show, ValueOrProvider } from '../../types';
+import { OnIncrement, type ScoreLevelDefinition, ScoreLevelDefinitions, Scorer } from './utils';
+
+type ScorerConfig = {
+	scoreLevelDefinitions: ScoreLevelDefinitions;
+	onIncrement: OnIncrement[number];
+};
 
 type IsOpeningServer = Show<boolean>;
 type Serve = {
@@ -9,22 +14,16 @@ type Serve = {
 	getServer: (scorer: Scorer) => AnyParticipant | IsOpeningServer;
 };
 
-export type OnNewByScoreLevel = // Technically named "EventListenersByScoreLevel"
-	EventListenersBy<ScoreLevel, [Scorer, IsHigherScoreLevelNew]>;
-
-type ScoreLevelsConfig = Array<ScoreLevelConfigOfScorer>;
-type TotalOfSets = Show<number>;
 export type Config =
 	& MatchConfig
+	& ScorerConfig
 	& {
-		scoreLevelsConfig: [...ScoreLevelsConfig, TotalOfSets];
 		serve: Serve;
-		onNewByScoreLevel: OnNewByScoreLevel;
-		className?: ValueOrProviderFromScorer<ClassName>;
+		className?: ValueOrProvider<ClassName, Scorer>;
 	};
 
 type ScoreLevelConfig =
-	& Pick<ScoreLevelConfigOfScorer, 'scoreLevel' | 'target'>
+	& Pick<ScoreLevelDefinition, 'scoreLevel' | 'target'>
 	& {
 		name: string;
 		index?: Index;
@@ -32,7 +31,7 @@ type ScoreLevelConfig =
 	};
 type Value = {
 	original: number;
-	transformed: ReturnType<NonNullable<ScoreLevelConfigOfScorer['transformer']>>;
+	transformed: ReturnType<NonNullable<ScoreLevelDefinition['transformer']>>;
 };
 export type GetColsCbArg = {
 	scoreLevel: ScoreLevelConfig;
