@@ -228,7 +228,7 @@ export default class TennisMatch extends ScoredMatch {
 				const receiver = this.getReceiver();
 
 				this.participantsManagerOfDualMetric.focus(receiver);
-				if (this.scorer.isAlmostWon()) {
+				if (this.scorer.isAlmostWon() && !isInTieBreak(this.scorer)) {
 
 					this.stats.increase(StatId.PossibleBreakPoints, receiver);
 					this.hasPossibleBreakPoint = true;
