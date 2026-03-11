@@ -37,7 +37,7 @@ export function buildDropdown() {
 }
 
 const
-	getSelectors = (index: number, className: string) => `.card:nth-child(${index + 1}) .${className}`,
+	getSelectors = (index: number, selectors: string) => `.card:nth-child(${index + 1}) ${selectors}`,
 	isTennisMatch = (value: unknown): value is typeof TennisMatch => value === TennisMatch;
 export function addChoice(item: typeof SPORTS[number]) {
 	const sectionElement = toElement(sectionHtmlContent);
@@ -53,8 +53,8 @@ export function addChoice(item: typeof SPORTS[number]) {
 	const { class: Class } = item;
 	let instance: InstanceType<typeof Class>;
 	const onChange = () => {
-		setHtmlContent(getSelectors(index, 'scoreboard'), instance.getScoreboard());
-		setHtmlContent(getSelectors(index, 'stats'), instance.getStats());
+		setHtmlContent(getSelectors(index, '.scoreboard'), instance.getScoreboard());
+		setHtmlContent(getSelectors(index, '.stats'), instance.getStats());
 	};
 	if (isTennisMatch(Class)) {
 		const
@@ -67,7 +67,19 @@ export function addChoice(item: typeof SPORTS[number]) {
 			teamTwo = new Team('Team 2');
 		instance = new Class(teamOne, teamTwo, onChange);
 	}
-	getHtmlElement(getSelectors(index, 'panel')).append(instance.getPanel());
+
+	const mq = window.matchMedia('(min-width: 768px)');
+	function listener(e: MediaQueryListEvent | MediaQueryList) {
+		const
+			isLessThanMediumBreakpoint = !e.matches,
+			selectors = isLessThanMediumBreakpoint
+				? '.dropdown-menu .panel'
+				: '.panel.d-none',
+			elem = instance.getPanel();
+		getHtmlElement(getSelectors(index, selectors)).append(elem);
+	}
+	mq.addEventListener('change', listener);
+	listener(mq);
 }
 
 const isNonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;

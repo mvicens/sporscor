@@ -5,6 +5,10 @@
 	--ss-color-light: var(--bs-light);
 }
 
+.card .dropdown-menu {
+	min-width: 20em;
+}
+
 .ss-root {
 	font-size: 1em;
 }

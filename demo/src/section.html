@@ -2,10 +2,22 @@
 	<div class="card-header"></div>
 	<div class="card-body">
 		<div class="row">
-			<div class="col">
-				<section class="panel"></section>
+			<div class="col-12 col-md">
+				<div class="dropdown mb-4 d-md-none">
+					<div class="btn-group">
+						<button class="btn btn-secondary">Panel</button>
+						<button class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+							aria-expanded="false" data-bs-auto-close="false">
+							<span class="visually-hidden">Toggle Dropdown</span>
+						</button>
+						<div class="dropdown-menu p-4">
+							<section class="panel"></section>
+						</div>
+					</div>
+				</div>
+				<section class="panel d-none d-md-block"></section>
 			</div>
-			<div class="col-md-9">
+			<div class="col-md-8 col-lg-9 col-xl-10">
 				<section class="scoreboard"></section>
 				<section class="stats"></section>
 			</div>
