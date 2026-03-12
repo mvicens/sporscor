@@ -58,6 +58,8 @@ export default abstract class Match {
 		return htmlGenerator.get(this.participant.getAll(), this.participantsManagerOfDualMetric);
 	}
 
+	/** @return The HTML content. */
+	public getScoreboard() { }
 	protected getUltimateScoreboard(html: Html, className?: ClassName, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
 		if (this.isUnstarted()) {
 			html = EMPTY_HTML;
@@ -72,6 +74,8 @@ export default abstract class Match {
 		return this.getRootHtml(html, ['scoreboard', className], interpolationDefinition);
 	}
 
+	/** @return The HTML content. */
+	public getStats() { }
 	protected stats: Stats;
 	protected getUltimateStats(statsList: StatsList, className?: ClassName) {
 		const
@@ -168,6 +172,11 @@ export default abstract class Match {
 		return this.getRootHtml(html, ['stats', className]);
 	}
 
+	/**
+	 * Gets a control panel to interact by buttons (instead invoke the API methods).
+	 * @return The HTML element.
+	 */
+	public getPanel() { }
 	private panelElement?: PanelElement;
 	protected getUltimatePanel(thisArg: this, definition: PanelDefinition) {
 		const value = this.panelElement;
@@ -248,6 +257,7 @@ export default abstract class Match {
 
 	protected dispatchEvent() { this.config.onChange(); }
 
+	/** Starts the match to prepare it. */
 	protected start(execute = noop) {
 		this.verifyIsUnstarted();
 
@@ -297,6 +307,10 @@ export default abstract class Match {
 		if (isAllDone)
 			throw new Error(`${upperFirst(team.getName())} already did all the timeouts`);
 	}
+	/**
+	 * Grants a timeout to a team.
+	 * @param team - The team.
+	 */
 	protected grantTimeoutTo(team: Team) {
 		this.assertCanHandleTimeouts(this.timeouts);
 

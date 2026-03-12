@@ -8,13 +8,10 @@ import { MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_MAX_TO_GO_TO_REST, POINTS_
 import { getTimeoutsPerPhase, isInTieBreak } from './fns';
 import type { PendingPointsMaxToGoToRest } from './types';
 
-/**
- * Represents a volleyball match.
- */
+/** Represents a volleyball match. */
 export default class VolleyballMatch extends ScoredMatch {
 	/**
-	 * Creates a new volleyball match.
-	 *
+	 * Creates a volleyball match.
 	 * @param teamOne - The 1st team to participate.
 	 * @param teamTwo - The 2nd team to participate.
 	 * @param onChange - A callback called when the scoreboard and/or statistics change.
@@ -85,13 +82,8 @@ export default class VolleyballMatch extends ScoredMatch {
 
 	private readonly isLastPointWon = new DualMetric(this.participantsManagerOfDualMetric, false);
 
-
-	/**
-	 * Gets a scoreboard to display points, sets and other info.
-	 *
-	 * @return The HTML content.
-	 */
-	public getScoreboard = (): string => this.getDefinedScoreboard(
+	/** Gets a scoreboard to display points, sets and other info. */
+	public override getScoreboard = (): string => this.getDefinedScoreboard(
 		[
 			['extraTh', '<th scope="col">Timeouts</th>'],
 			[
@@ -105,23 +97,14 @@ export default class VolleyballMatch extends ScoredMatch {
 		true
 	);
 
-	/**
-	 * Gets a statistics panel about teams playing data.
-	 *
-	 * @return The HTML content.
-	 */
-	public getStats = (): string => this.getDefinedStats([
+	/** Gets a statistics panel about teams playing data. */
+	public override getStats = (): string => this.getDefinedStats([
 		[StatId.ServiceErrors, StatId.TotalServicePoints, IS_PERCENTAGE_STAT_ID],
 		[StatId.PointScoring, StatId.TotalServicePoints, IS_PERCENTAGE_STAT_ID],
 		[StatId.SideOut, StatId.TotalReceptionPoints, IS_PERCENTAGE_STAT_ID]
 	]);
 
-	/**
-	 * Gets a control panel to interact by buttons (instead invoke the API methods).
-	 *
-	 * @return The HTML element.
-	 */
-	public getPanel = (): Element => this.getUltimatePanel(this, [
+	public override getPanel = (): Element => this.getUltimatePanel(this, [
 		[
 			['Start', 'start']
 		],
@@ -154,28 +137,19 @@ export default class VolleyballMatch extends ScoredMatch {
 
 	/**
 	 * Grants the opening serve to a team.
-	 *
 	 * @param team - The team.
 	 */
 	public override grantOpeningServeTo(team: Team): void { super.grantOpeningServeTo(team); }
 
-	/**
-	 * Starts the prepared match or (at break) the next set, or restarts (in timeout) the current set, to play.
-	 */
+	/** Starts the prepared match or (at break) the next set, or restarts (in timeout) the current set, to play. */
 	public override play(): void {
 		super.play(undefined, () => { this.isSomePointDone = false; });
 	}
 
-	/**
-	 * Grants a timeout to a team.
-	 *
-	 * @param team - The team.
-	 */
 	public override grantTimeoutTo(team: Team): void { super.grantTimeoutTo(team); }
 
 	/**
 	 * Logs a point won by a team.
-	 *
 	 * @param team - The team.
 	 */
 	public override  logPointWonBy(team: Team): void {

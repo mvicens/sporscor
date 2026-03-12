@@ -1,12 +1,9 @@
 import { Participant, ParticipantType } from '..';
 
-/**
- * Represents a player to participate in a match.
- */
+/** Represents a player to participate in a match. */
 export default class Player extends Participant {
 	/**
-	 * Creates a new player.
-	 *
+	 * Creates a player.
 	 * @param name - The name.
 	 */
 	constructor(name: string) {

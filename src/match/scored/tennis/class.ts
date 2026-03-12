@@ -9,13 +9,10 @@ import { getTotalGames, isInTieBreak } from './fns';
 
 import './css/index.css';
 
-/**
- * Represents a tennis match.
- */
+/** Represents a tennis match. */
 export default class TennisMatch extends ScoredMatch {
 	/**
-	 * Creates a new tennis match.
-	 *
+	 * Creates a tennis match.
 	 * @param playerOne - The 1st player to participate.
 	 * @param playerTwo - The 2nd player to participate.
 	 * @param onChange - A callback called when the scoreboard and/or statistics change.
@@ -89,13 +86,8 @@ export default class TennisMatch extends ScoredMatch {
 		);
 	}
 
-
-	/**
-	 * Gets a scoreboard to display points, games and other info.
-	 *
-	 * @return The HTML content.
-	 */
-	public getScoreboard(): string {
+	/** Gets a scoreboard to display points, games and other info. */
+	public override getScoreboard(): string {
 		const
 			interpolationDefinition: InterpolationDefinition = [],
 			{ scorer } = this;
@@ -122,12 +114,8 @@ export default class TennisMatch extends ScoredMatch {
 		return this.getDefinedScoreboard(interpolationDefinition);
 	}
 
-	/**
-	 * Gets a statistics panel about players playing data.
-	 *
-	 * @return The HTML content.
-	 */
-	public getStats = (): string => this.getDefinedStats([
+	/** Gets a statistics panel about players playing data. */
+	public override getStats = (): string => this.getDefinedStats([
 		StatId.ServiceErrors,
 		[StatId.BreakPoints, StatId.PossibleBreakPoints, IS_RATIO_STAT_ID],
 		[StatId.FirstServesIn, StatId.TotalServicePoints, IS_PERCENTAGE_STAT_ID],
@@ -136,12 +124,7 @@ export default class TennisMatch extends ScoredMatch {
 		[StatId.SecondServePointsWon, StatId.SecondServesIn, IS_PERCENTAGE_STAT_ID]
 	]);
 
-	/**
-	 * Gets a control panel to interact by buttons (instead invoke the API methods).
-	 *
-	 * @return The HTML element.
-	 */
-	public getPanel = (): Element => this.getUltimatePanel(this, [
+	public override getPanel = (): Element => this.getUltimatePanel(this, [
 		[
 			['Start', 'start']
 		],
@@ -168,29 +151,22 @@ export default class TennisMatch extends ScoredMatch {
 
 	/**
 	 * Grants the opening serve to a player.
-	 *
 	 * @param player - The player.
 	 */
 	public override grantOpeningServeTo(player: Player): void { super.grantOpeningServeTo(player); }
 
-	/**
-	 * Starts the prepared match or (at break) the next game (and maybe set) to play.
-	 */
+	/** Starts the prepared match or (at break) the next game (and maybe set) to play. */
 	public override play(): void { super.play(); }
 
-	/**
-	 * Logs a serve as let.
-	 */
+	/** Logs a serve as let. */
 	public logServeAsLet(): void {
 		this.verifyIsPlaying();
 		info('Let serve');
 	}
 
 	private hasPossibleBreakPoint = false;
-
 	/**
 	 * Logs a point won by a player.
-	 *
 	 * @param player - The player.
 	 */
 	public override logPointWonBy(player: Player): void {

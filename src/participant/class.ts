@@ -8,19 +8,12 @@ export default abstract class Participant {
 	}
 
 	private readonly id: Id;
-
-	/**
-	 * Gets the participant ID.
-	 */
+	/** Gets the participant ID. */
 	public getId = (): number => this.id;
 
-	/**
-	 * Gets the participant type (player or team).
-	 */
+	/** Gets the participant type (player or team). */
 	public getType = (): string => this.type;
 
-	/**
-	 * Gets the name.
-	 */
+	/** Gets the name. */
 	public getName = (): string => this.name;
 }
