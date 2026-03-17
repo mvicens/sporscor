@@ -9,7 +9,7 @@ export { DualMetric };
 
 export { getParticipantsManagerOfDualMetric, type ParticipantsManagerOfDualMetric } from './dual-metric';
 
-export { ensureNumber, ensureString } from './ensures';
+export { ensureArray, ensureNumber, ensureString } from './ensures';
 
 export { DeveloperError, DeveloperTypeError } from './errors';
 

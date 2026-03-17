@@ -1,10 +1,10 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { type AnyParticipant, Team } from '../participant';
-import type { ClassName, Defined, Html, TableHeaderScope } from '../types';
-import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getParticipantsManagerOfDualMetric, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, ParticipantsManagerOfDualMetric, resolveValueOrProvider, upperFirst, warn } from '../utils';
+import type { ClassName, Defined, Html, OneOrMany, TableHeaderScope } from '../types';
+import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureArray, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getParticipantsManagerOfDualMetric, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, ParticipantsManagerOfDualMetric, resolveValueOrProvider, upperFirst, warn } from '../utils';
 import { RestType, Stage } from './enums';
-import type { Config, MethodName, PanelDefinition, PanelElement, StatsList, Timeouts, WithParticipantOne } from './types';
-import { EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
+import type { Config, MethodName, PanelDefinition, StatsList, Timeouts, WithParticipantOne } from './types';
+import { Cache, CacheId, EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
 import './css/index.css';
 
@@ -40,6 +40,8 @@ export default abstract class Match {
 	protected readonly participant: DualMetric<AnyParticipant>;
 
 	protected stage = Stage.Unstarted;
+
+	protected cache = new Cache();
 
 	private isUnstarted = () => this.stage === Stage.Unstarted;
 	protected isStarted = () => this.stage !== Stage.Unstarted;
@@ -177,56 +179,49 @@ export default abstract class Match {
 	 * @return The HTML element.
 	 */
 	public getPanel() { }
-	private panelElement?: PanelElement;
-	protected getUltimatePanel(thisArg: this, definition: PanelDefinition) {
-		const value = this.panelElement;
-		if (isDefined(value))
-			return value;
+	protected getUltimatePanel = (thisArg: this, definition: PanelDefinition) =>
+		this.cache.get(CacheId.Panel, () => {
+			const methodNames: Array<[MethodName, WithParticipantOne?]> = [];
 
-		const methodNames: Array<[MethodName, WithParticipantOne?]> = [];
-
-		let html: Html = definition
-			.map(item => {
-				const html: Html = item
-					.map(([text, method, withParticipantOne]) => {
-						methodNames.push([method, withParticipantOne ?? false]);
-						return `<button>${upperFirst(text)}</button>`;
-					})
-					.join('');
-				return `<div>${html}</div>`;
-			})
-			.join('\n');
-		html = (
-			`<div>
+			let html: Html = definition
+				.map(item => {
+					const html: Html = item
+						.map(([text, method, withParticipantOne]) => {
+							methodNames.push([method, withParticipantOne ?? false]);
+							return `<button>${upperFirst(text)}</button>`;
+						})
+						.join('');
+					return `<div>${html}</div>`;
+				})
+				.join('\n');
+			html = (
+				`<div>
 				<h1>Panel</h1>
 				${html}
 			</div>`
-		);
-		html = this.getRootHtml(html, ['panel']);
+			);
+			html = this.getRootHtml(html, ['panel']);
 
-		const
-			domParser = new DOMParser(),
-			document = domParser.parseFromString(html, 'text/html'),
-			result = document.body.firstElementChild;
-
-		assertIsNonNull(result);
-		methodNames.forEach(([methodName, withParticipantOne], i) => {
-			result.getElementsByTagName('button').item(i)?.addEventListener('click', () => {
-				if (isMemberOf(methodName, thisArg)) {
-					const fn = thisArg[methodName];
-					if (isFunction(fn)) {
-						let arg;
-						if (isDefined(withParticipantOne))
-							arg = withParticipantOne ? this.participant.getOfOne() : this.participant.getOfTwo();
-						fn.call(thisArg, arg);
+			const
+				domParser = new DOMParser(),
+				document = domParser.parseFromString(html, 'text/html'),
+				result = document.body.firstElementChild;
+			assertIsNonNull(result);
+			methodNames.forEach(([methodName, withParticipantOne], i) => {
+				result.getElementsByTagName('button').item(i)?.addEventListener('click', () => {
+					if (isMemberOf(methodName, thisArg)) {
+						const fn = thisArg[methodName];
+						if (isFunction(fn)) {
+							let arg;
+							if (isDefined(withParticipantOne))
+								arg = withParticipantOne ? this.participant.getOfOne() : this.participant.getOfTwo();
+							fn.call(thisArg, arg);
+						}
 					}
-				}
+				});
 			});
+			return result;
 		});
-
-		this.panelElement = result;
-		return result;
-	}
 
 	protected verifyParticipantIsRegistered(value: AnyParticipant) { this.participantsManagerOfDualMetric.verify(value, true); }
 
@@ -255,7 +250,12 @@ export default abstract class Match {
 			throw new Error(`The match is not at ${phaseName} break`);
 	}
 
-	protected dispatchEvent() { this.config.onChange(); }
+	protected dispatchEvent(cacheIds?: OneOrMany<CacheId>) {
+		if (isDefined(cacheIds))
+			ensureArray(cacheIds).forEach(item => { this.cache.clear(item); });
+
+		this.config.onChange();
+	}
 
 	/** Starts the match to prepare it. */
 	protected start(execute = noop) {
@@ -272,7 +272,8 @@ export default abstract class Match {
 		_?: AnyParticipant, // In order to could overwrite method
 		execute = noop,
 		verifyBefore = noop,
-		verifyAfter = () => { this.verifyIsInactive(); }
+		verifyAfter = () => { this.verifyIsInactive(); },
+		cacheIds?: Array<CacheId>
 	) {
 		verifyBefore();
 		verifyAfter();
@@ -283,7 +284,7 @@ export default abstract class Match {
 
 		this.wasPlayed = true;
 
-		this.dispatchEvent();
+		this.dispatchEvent(cacheIds);
 	}
 
 	protected readonly timeouts?: Timeouts;

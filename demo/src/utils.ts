@@ -22,16 +22,20 @@ export function setTheme() {
 	document.documentElement.setAttribute('data-bs-theme', value);
 }
 
-export function setHtmlContent(selectors: string, value: string, onFinish?: VoidFunction) {
-	getHtmlElement(selectors).innerHTML = value;
+export function setHtmlContent(selectors: string, value: string | Element, onFinish?: VoidFunction) {
+	if (typeof value === 'string')
+		getHtmlElement(selectors).innerHTML = value;
+	else
+		getHtmlElement(selectors).append(value);
+
 	onFinish?.();
 }
 
-export function buildDropdown() {
-	const elem = getHtmlElement('.dropdown-menu');
-	SPORTS.forEach(item => {
-		const childElem = toElement(`<li><a class="dropdown-item" href="#">${item.name}</a></li>`);
-		childElem.addEventListener('click', () => { addChoice(item); });
+export function buildDropdown(selectors: string, content: Array<[string, VoidFunction]>) {
+	const elem = getHtmlElement(`${selectors} .dropdown-menu`);
+	content.forEach(([name, listener]) => {
+		const childElem = toElement(`<li><a class="dropdown-item" href="#">${name}</a></li>`);
+		childElem.addEventListener('click', listener);
 		elem.appendChild(childElem);
 	});
 }
@@ -50,11 +54,16 @@ export function addChoice(item: typeof SPORTS[number]) {
 
 	getHtmlElement('main').appendChild(sectionElement);
 
+	const
+		loadScoreboard = () => { setHtmlContent(getSelectors(index, '.scoreboard'), instance.getScoreboard()); },
+		loadStats = () => { setHtmlContent(getSelectors(index, '.stats'), instance.getStats()); },
+		loadPanel = () => { setHtmlContent(getSelectors(index, '.panel'), instance.getPanel()); };
+
 	const { class: Class } = item;
 	let instance: InstanceType<typeof Class>;
 	const onChange = () => {
-		setHtmlContent(getSelectors(index, '.scoreboard'), instance.getScoreboard());
-		setHtmlContent(getSelectors(index, '.stats'), instance.getStats());
+		loadScoreboard();
+		loadStats();
 	};
 	if (isTennisMatch(Class)) {
 		const
@@ -68,18 +77,25 @@ export function addChoice(item: typeof SPORTS[number]) {
 		instance = new Class(teamOne, teamTwo, onChange);
 	}
 
+	loadPanel();
+
 	const mq = window.matchMedia('(min-width: 768px)');
-	function listener(e: MediaQueryListEvent | MediaQueryList) {
+	function listener() {
 		const
-			isLessThanMediumBreakpoint = !e.matches,
+			isLessThanMediumBreakpoint = !mq.matches,
 			selectors = isLessThanMediumBreakpoint
-				? '.dropdown-menu .panel'
-				: '.panel.d-none',
-			elem = instance.getPanel();
-		getHtmlElement(getSelectors(index, selectors)).append(elem);
-	}
+				? '.d-md-none .sidebar-container'
+				: '.sidebar-container.d-none';
+		getHtmlElement(getSelectors(index, selectors)).append(getHtmlElement(getSelectors(index, '.sidebar')));
+	};
 	mq.addEventListener('change', listener);
-	listener(mq);
+	listener();
+
+	buildDropdown(getSelectors(index, '.sidebar'), [
+		['Scoreboard', loadScoreboard],
+		['Stats', loadStats],
+		['Panel', loadPanel]
+	]);
 }
 
 const isNonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;

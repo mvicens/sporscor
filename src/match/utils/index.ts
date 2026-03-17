@@ -1,3 +1,8 @@
+import Cache from './cache';
+export { Cache };
+
+export { CacheId } from './cache';
+
 import HtmlGenerator from './html-generator';
 export { HtmlGenerator };
 

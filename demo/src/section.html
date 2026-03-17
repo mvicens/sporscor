@@ -5,17 +5,26 @@
 			<div class="col-12 col-md">
 				<div class="dropdown mb-4 d-md-none">
 					<div class="btn-group">
-						<button class="btn btn-secondary">Panel</button>
+						<button class="btn btn-secondary">Sidebar</button>
 						<button class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
 							aria-expanded="false" data-bs-auto-close="false">
 							<span class="visually-hidden">Toggle Dropdown</span>
 						</button>
-						<div class="dropdown-menu p-4">
-							<section class="panel"></section>
+						<div class="dropdown-menu p-4 sidebar-container">
+							<div class="sidebar">
+								<div class="dropdown mb-3">
+									<button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
+										aria-expanded="false">
+										Load…
+									</button>
+									<ul class="dropdown-menu"></ul>
+								</div>
+								<section class="panel"></section>
+							</div>
 						</div>
 					</div>
 				</div>
-				<section class="panel d-none d-md-block"></section>
+				<div class="sidebar-container d-none d-md-block"></div>
 			</div>
 			<div class="col-md-8 col-lg-9 col-xl-10">
 				<section class="scoreboard"></section>

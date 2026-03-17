@@ -11,7 +11,9 @@ export type Interpolation = `${typeof INTERPOLATION_START_SYMBOL}${Interpolation
 type InterpolationId =
 	| 'addingToGamesOfSet'
 	| 'extraTd'
-	| 'extraTh';
+	| 'extraTh'
+	| 'mainClock'
+	| 'shotClock';
 export type InterpolationDefinitionKey =
 	| InterpolationId
 	| [InterpolationId, Index];

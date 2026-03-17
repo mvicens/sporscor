@@ -3,7 +3,7 @@ import { EMPTY_HTML } from '../../consts';
 import { Team } from '../../participant';
 import { DualMetric, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
 import { Stage } from '../enums';
-import { StatId } from '../utils';
+import { CacheId, getInterpolation, InterpolationDefinition, StatId } from '../utils';
 import { DECIMALED_MINUTES, DECIMALED_SHOT_CLOCK_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_SHOT_CLOCK_SECONDS, LAST_PART_OF_FIRST_HALF, MAIN_CLOCK_ID, PARTS, SHOT_CLOCK_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
 import type { IsSuccessful, OpeningBallPossessor, Parts, Qty } from './types';
 import { Timer, type TimerId, type TimerItem } from './utils';
@@ -28,23 +28,23 @@ export default class BasketballMatch extends Match {
 		});
 
 		const
-			onTimerChange = () => {
+			dispatchEvent = (cacheId: CacheId) => {
 				if (this.isStarted())
-					this.dispatchEvent();
+					this.dispatchEvent(cacheId);
 			},
 			items: Array<TimerItem> = [
 				{
 					id: MAIN_CLOCK_ID,
 					initialTime: INITIAL_MINUTES * 60,
 					decimaledTime: DECIMALED_MINUTES * 60,
-					onChange: onTimerChange,
+					onChange: () => { dispatchEvent(CacheId.MainClock); },
 					onFinish: () => { this.finishPart(); }
 				},
 				{
 					id: SHOT_CLOCK_ID,
 					initialTime: INITIAL_SHOT_CLOCK_SECONDS,
 					decimaledTime: DECIMALED_SHOT_CLOCK_SECONDS,
-					onChange: onTimerChange,
+					onChange: () => { dispatchEvent(CacheId.ShotClock); },
 					onFinish: () => {
 						this._pause(() => {
 							info('The shot clock is over');
@@ -79,40 +79,48 @@ export default class BasketballMatch extends Match {
 	/** Gets a scoreboard to display points, time and other info. */
 	public override getScoreboard(): string {
 		const
-			ths = [
-				`<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>`,
-				'<th scope="col">Points</th>'
-			],
-			isStarted = this.isStarted(),
-			isSomeBallPossession = this.hasBallPossession.some(isTruth),
-			bodyCells = (isTeamTwo: boolean) => {
-				const team = this.participant[!isTeamTwo ? 'getOfOne' : 'getOfTwo']();
-				return [
-					`<th scope="row">${upperFirst(this.participant.getBy(team).getName())}</th>`,
-					`<td>${this.stats.get(StatId.TotalPoints, team)}</td>`
-				];
-			},
-			getTime = (id: TimerId) => `<span class="${getClassNames(this.isRunning() ? null : 'lowlight')}">${this.timer.getTimeOf(id)}</span>`;
-		return this.getUltimateScoreboard(
-			`<thead>
-					<tr>
-						${ths.join('')}
-						${ths.reverse().join('')}
-						${!isStarted ? EMPTY_HTML : '<th scope="col">Part</th>'}
-						${!isStarted ? EMPTY_HTML : '<th scope="col">Time</th>'}
-						${!isSomeBallPossession ? EMPTY_HTML : '<th scope="col">Possession</th>'}
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						${bodyCells(false).join('')}
-						${bodyCells(true).reverse().join('')}
-						${!isStarted ? EMPTY_HTML : `<td>${getOrdinal(this.parts.current)}</td>`}
-						${!isStarted ? EMPTY_HTML : `<td>${getTime(MAIN_CLOCK_ID)}</td>`}
-						${!isSomeBallPossession ? EMPTY_HTML : `<td>${getTime(SHOT_CLOCK_ID)}</td>`}
-					</tr>
-				</tbody>`
-		);
+			html = this.cache.get(CacheId.Scoreboard, () => {
+				const
+					ths = [
+						`<th scope="col">${upperFirst(this.getParticipantTypeName())}</th>`,
+						'<th scope="col">Points</th>'
+					],
+					isStarted = this.isStarted(),
+					isSomeBallPossession = this.hasBallPossession.some(isTruth),
+					bodyCells = (isTeamTwo: boolean) => {
+						const team = this.participant[!isTeamTwo ? 'getOfOne' : 'getOfTwo']();
+						return [
+							`<th scope="row">${upperFirst(this.participant.getBy(team).getName())}</th>`,
+							`<td>${this.stats.get(StatId.TotalPoints, team)}</td>`
+						];
+					};
+				return (
+					`<thead>
+							<tr>
+								${ths.join('')}
+								${ths.reverse().join('')}
+								${!isStarted ? EMPTY_HTML : '<th scope="col">Part</th>'}
+								${!isStarted ? EMPTY_HTML : '<th scope="col">Time</th>'}
+								${!isSomeBallPossession ? EMPTY_HTML : '<th scope="col">Possession</th>'}
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								${bodyCells(false).join('')}
+								${bodyCells(true).reverse().join('')}
+								${!isStarted ? EMPTY_HTML : `<td>${getOrdinal(this.parts.current)}</td>`}
+								${!isStarted ? EMPTY_HTML : `<td>${getInterpolation('mainClock', this.participantsManagerOfDualMetric)}</td>`}
+								${!isSomeBallPossession ? EMPTY_HTML : `<td>${getInterpolation('shotClock', this.participantsManagerOfDualMetric)}</td>`}
+							</tr>
+						</tbody>`
+				);
+			}),
+			getTime = (id: TimerId) => `<span class="${getClassNames(this.isRunning() ? null : 'lowlight')}">${this.timer.getTimeOf(id)}</span>`,
+			interpolationDefinition: InterpolationDefinition = [
+				['mainClock', this.cache.get(CacheId.MainClock, () => getTime(MAIN_CLOCK_ID))],
+				['shotClock', this.cache.get(CacheId.ShotClock, () => getTime(SHOT_CLOCK_ID))]
+			];
+		return this.getUltimateScoreboard(html, null, interpolationDefinition);
 	}
 
 	/** Gets a statistics panel about teams playing data. */
@@ -224,7 +232,8 @@ export default class BasketballMatch extends Match {
 				else
 					this.verifyIsInTimeoutOrPreparing();
 				this.verifyOpeningBallPossessorIsOk(openingBallPossessor);
-			}
+			},
+			[CacheId.Scoreboard, CacheId.MainClock, CacheId.ShotClock]
 		);
 	}
 
@@ -289,7 +298,7 @@ export default class BasketballMatch extends Match {
 
 			this.timer.pauseAll();
 			execute();
-			this.dispatchEvent();
+			this.dispatchEvent([CacheId.MainClock, CacheId.ShotClock]);
 		});
 	}
 	/** Pauses the time. */
@@ -318,7 +327,7 @@ export default class BasketballMatch extends Match {
 
 			this.timer.runAll();
 
-			this.dispatchEvent();
+			this.dispatchEvent([CacheId.MainClock, CacheId.ShotClock]);
 		});
 	}
 
@@ -337,7 +346,7 @@ export default class BasketballMatch extends Match {
 
 		execute();
 
-		this.dispatchEvent();
+		this.dispatchEvent(CacheId.Scoreboard);
 	}
 
 	private wasOutOfTimeFieldBasketAttempted = false;
@@ -447,6 +456,6 @@ export default class BasketballMatch extends Match {
 
 		info('The quarter is being prepared…');
 
-		this.dispatchEvent();
+		this.dispatchEvent(CacheId.Scoreboard);
 	}
 }

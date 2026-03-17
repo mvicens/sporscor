@@ -17,6 +17,8 @@ export type NonNull<T = unknown> = T & ({} | undefined);
 export type Nullable = null | undefined;
 export type OrNullable<T> = T | Nullable;
 
+export type OneOrMany<T> = T | Array<T>;
+
 export type Callback<T extends Args, U = void> = (...args: T) => U;
 
 type Entry<K, V> = [key: K, value: V];
