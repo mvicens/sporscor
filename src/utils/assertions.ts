@@ -1,5 +1,5 @@
 import { DeveloperTypeError, isDefined, isNonNull, isNonNullable, isNumber, isRecord } from '.';
-import type { Defined, NonNull } from '../types';
+import { Defined, NonNull } from '../types';
 
 export function assertIsDefined<T>(value: T): asserts value is Defined<T> {
 	if (!isDefined(value))

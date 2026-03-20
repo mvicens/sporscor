@@ -1,7 +1,5 @@
 import { Team } from '../../participant';
-import type { Show } from '../../types';
-
-export type Qty = Show<number>;
+import { Qty } from '../../types';
 
 export type Parts = {
 	current: Qty;
@@ -10,4 +8,4 @@ export type Parts = {
 
 export type OpeningBallPossessor = Team;
 
-export type IsSuccessful = Show<boolean>;
+export type IsSuccessful = boolean;

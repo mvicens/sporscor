@@ -1,25 +1,26 @@
+import { Producer } from '../../../types';
 import { Id } from './enums';
-import { Generator, HasValue, ValueByName } from './types';
+import { ValueById } from './types';
 
 export default class Cache {
-	#hasValue: ValueByName<HasValue> = {};
+	#hasDatumById: ValueById<boolean> = {};
 
-	#data: ValueByName = {};
+	#datumById: ValueById = {};
 
-	get<T>(id: Id, generator: Generator<T>) {
-		const hasValue = this.#hasValue[id] ?? false;
+	get<T>(id: Id, generator: Producer<T>) {
+		const hasDatum = this.#hasDatumById[id] ?? false;
 
-		if (hasValue) {
-			const result = this.#data[id] as T;
+		if (hasDatum) {
+			const result = this.#datumById[id] as T;
 			return result;
 		}
 
-		const result = this.#data[id] = generator();
-		this.#hasValue[id] = true;
+		const result = this.#datumById[id] = generator();
+		this.#hasDatumById[id] = true;
 		return result;
 	}
 
 	clear(id: Id) {
-		this.#hasValue[id] = false;
+		this.#hasDatumById[id] = false;
 	}
 }

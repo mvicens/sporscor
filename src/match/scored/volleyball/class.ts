@@ -4,9 +4,9 @@ import { EMPTY_HTML } from '../../../consts';
 import { Team } from '../../../participant';
 import { DualMetric, getRatio, isDefined, isFalse } from '../../../utils';
 import { StatId } from '../../utils';
-import { MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_MAX_TO_GO_TO_REST, POINTS_MAX_TO_GO_TO_REST_IN_TIE_BREAK, SERVES_PER_POINT, TOTAL_OF_SETS } from './consts';
+import { MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_TO_GO_TO_REST, POINTS_TO_GO_TO_REST_IN_TIE_BREAK, SERVES_PER_POINT, TOTAL_OF_SETS } from './consts';
 import { getTimeoutsPerPhase, isInTieBreak } from './fns';
-import type { PendingPointsMaxToGoToRest } from './types';
+import { PointsToGoToRest } from './types';
 
 /** Represents a volleyball match. */
 export default class VolleyballMatch extends ScoredMatch {
@@ -34,9 +34,9 @@ export default class VolleyballMatch extends ScoredMatch {
 					shouldWinByTwo: true
 				}
 			],
-			onIncrement: {
-				[ScoreLevel.Point]: (scorer, isSetIncremented) => {
-					if (isSetIncremented)
+			onIncrease: {
+				[ScoreLevel.Point]: (scorer, isSetAffected) => {
+					if (isSetAffected)
 						return;
 
 					this.isSomePointDone = true;
@@ -44,16 +44,16 @@ export default class VolleyballMatch extends ScoredMatch {
 					if (!isInTieBreak(scorer)) {
 						const
 							pointsMax = scorer.getLastCountOf(ScoreLevel.Point).getMax(),
-							shouldDo = this.pendingPointsMaxToGoToRest.has(pointsMax);
+							shouldDo = this.pointsToGoToRest.has(pointsMax);
 						if (shouldDo) {
 							this.goToRest(RestType.breakPerPoint);
-							this.pendingPointsMaxToGoToRest.delete(pointsMax);
+							this.pointsToGoToRest.delete(pointsMax);
 						}
 					}
 				},
 				[ScoreLevel.Set]: () => {
 					this.resetTimeouts();
-					this.resetPendingPointsMaxToGoToRest();
+					this.resetPointsToGoToRest();
 				}
 			},
 
@@ -77,7 +77,7 @@ export default class VolleyballMatch extends ScoredMatch {
 			StatId.TotalReceptionPoints, StatId.SideOut
 		);
 
-		this.resetPendingPointsMaxToGoToRest();
+		this.resetPointsToGoToRest();
 	}
 
 	private readonly isLastPointWon = new DualMetric(this.participantsManagerOfDualMetric, false);
@@ -152,7 +152,7 @@ export default class VolleyballMatch extends ScoredMatch {
 	 * Logs a point won by a team.
 	 * @param team - The team.
 	 */
-	public override  logPointWonBy(team: Team): void {
+	public override logPointWonBy(team: Team): void {
 		super.logPointWonBy(
 			team,
 			(server, receiver, isServerWinner) => {
@@ -170,12 +170,12 @@ export default class VolleyballMatch extends ScoredMatch {
 		);
 	}
 
-	private pendingPointsMaxToGoToRest: PendingPointsMaxToGoToRest = new Set();
-	private resetPendingPointsMaxToGoToRest() {
-		this.pendingPointsMaxToGoToRest = new Set(
+	private pointsToGoToRest: PointsToGoToRest = new Set();
+	private resetPointsToGoToRest() {
+		this.pointsToGoToRest = new Set(
 			!isInTieBreak(this.scorer)
-				? POINTS_MAX_TO_GO_TO_REST
-				: POINTS_MAX_TO_GO_TO_REST_IN_TIE_BREAK
+				? POINTS_TO_GO_TO_REST
+				: POINTS_TO_GO_TO_REST_IN_TIE_BREAK
 		);
 	}
 }

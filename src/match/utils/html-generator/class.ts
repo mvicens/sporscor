@@ -1,11 +1,11 @@
 import { Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
-import type { AnyParticipant } from '../../../participant';
-import type { ClassName, Html } from '../../../types';
+import { AnyParticipant } from '../../../participant';
+import { ClassName, Html } from '../../../types';
 import { assertIsDefined, getClassNames, isDefined, isNull, ParticipantsManagerOfDualMetric, resolveValueOrProvider } from '../../../utils';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
 import { getInterpolation, getInterpolationFromContent } from './fns';
-import type { InterpolationContent, InterpolationDefinition } from './types';
+import { InterpolationContent, InterpolationDefinition } from './types';
 
 export default class HtmlGenerator {
 	constructor(html: Html, interpolationDefinition: InterpolationDefinition, sport: Sport, classNames: Array<ClassName>) {
@@ -51,8 +51,8 @@ export default class HtmlGenerator {
 				return null;
 			})
 			.filter(item => !isNull(item));
-		interpolationContents.forEach(item => {
-			const interpolation = getInterpolationFromContent(item);
+		interpolationContents.forEach(interpolationContent => {
+			const interpolation = getInterpolationFromContent(interpolationContent);
 			html = html.replace(interpolation, '');
 		});
 

@@ -1,5 +1,5 @@
 import Scorer from '.';
-import type { Callback, EventListener, Html, Show, ValueOrProvider } from '../../../../types';
+import { Callback, EventHandler, Html, ValueOrProvider } from '../../../../types';
 import { DualMetric, ParticipantsManagerOfDualMetric } from '../../../../utils';
 import { ScoreLevel } from './enums';
 
@@ -8,22 +8,21 @@ export type ScoreLevelDefinition = {
 	scoreLevel: ScoreLevel;
 	target: ValueOrProviderFromScorer<number>;
 	shouldWinByTwo: ValueOrProviderFromScorer<boolean>;
-	transformer?: (count: number, opponentCount: number, scorer: Scorer) => number | Html;
+	transformer?: Callback<[count: number, opponentCount: number, Scorer], number | Html>;
 };
 
-type TotalOfSets = Show<number>;
-export type ScoreLevelDefinitions = [TotalOfSets, ...Array<ScoreLevelDefinition>];
+export type ScoreLevelDefinitions = [totalOfSets: number, ...Array<ScoreLevelDefinition>];
 
-export type IsHigherScoreLevelIncremented = Show<boolean>;
-type EventListenerByScoreLevel = Partial<Record<ScoreLevel, EventListener<[Scorer, IsHigherScoreLevelIncremented]>>>;
-export type OnIncrement = Array<EventListenerByScoreLevel>;
+export type IsHigherScoreLevelAffected = boolean;
+type EventHandlerByScoreLevel = Partial<Record<ScoreLevel, EventHandler<[Scorer, IsHigherScoreLevelAffected]>>>;
+export type OnIncrease = Array<EventHandlerByScoreLevel>;
 
 export type Config = {
 	scoreLevelDefinitions: ScoreLevelDefinitions;
 	participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric;
 	events: {
-		onIncrement: OnIncrement;
-		onFinish: EventListener;
+		onIncrease: OnIncrease;
+		onFinish: EventHandler;
 	};
 };
 
@@ -38,6 +37,6 @@ export type CountHierarchyChild = // Lower score level
 	| CountHierarchy // Not point
 	| Count; // Point
 
-type ShouldInterrupt = Show<true>;
-type ShouldContinue = Show<false>; // Could be called "ShouldNotInterrupt"
+type ShouldInterrupt = true;
+type ShouldContinue = false; // Could be called "ShouldNotInterrupt"
 export type LoopCb<T> = Callback<[T], ShouldInterrupt | ShouldContinue>;

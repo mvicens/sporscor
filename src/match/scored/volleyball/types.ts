@@ -1,1 +1,1 @@
-export type PendingPointsMaxToGoToRest = Set<number>;
+export type PointsToGoToRest = Set<number>;

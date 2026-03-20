@@ -3,7 +3,7 @@ import { IS_PERCENTAGE_STAT_ID, IS_RATIO_STAT_ID, RestType, Sport } from '../..'
 import { EMPTY_HTML } from '../../../consts';
 import { Player } from '../../../participant';
 import { assertIsDefined, assertIsNumber, getLightedElem, info, isDefined, isEvenNumber, isOddNumber, isUndefined } from '../../../utils';
-import { StatId, type InterpolationDefinition } from '../../utils';
+import { InterpolationDefinition, StatId } from '../../utils';
 import { ADVANTAGE_SYMBOL, MIN_TO_WIN_GAME, MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_IN_GAME, SERVES_PER_POINT, TOTAL_GAMES_WHEN_TIE_BREAK_WON, TOTAL_OF_SETS } from './consts';
 import { getTotalGames, isInTieBreak } from './fns';
 
@@ -51,9 +51,9 @@ export default class TennisMatch extends ScoredMatch {
 					}
 				}
 			],
-			onIncrement: {
-				[ScoreLevel.Game]: (scorer, isSetIncremented) => {
-					if (isSetIncremented)
+			onIncrease: {
+				[ScoreLevel.Game]: (scorer, isSetAffected) => {
+					if (isSetAffected)
 						return;
 
 					const
@@ -91,22 +91,22 @@ export default class TennisMatch extends ScoredMatch {
 		const
 			interpolationDefinition: InterpolationDefinition = [],
 			{ scorer } = this;
-		scorer.getConcludedDetailedCountsOf(ScoreLevel.Set).forEach((qty, indexOfSet) => {
-			if (qty.getTotal() === TOTAL_GAMES_WHEN_TIE_BREAK_WON) {
-				const lastGamePoints = scorer.getCountBy(indexOfSet, -1);
+		scorer.getConcludedDetailedCountsOf(ScoreLevel.Set).forEach((count, indexOfSet) => {
+			if (count.getTotal() === TOTAL_GAMES_WHEN_TIE_BREAK_WON) {
+				const pointsInLastGame = scorer.getCountBy(indexOfSet, -1);
 				interpolationDefinition.push([
 					['addingToGamesOfSet', indexOfSet],
 					player => {
 						if (isUndefined(player))
 							return EMPTY_HTML;
 
-						const value = lastGamePoints.getBy(player);
-						assertIsNumber(value);
+						const count = pointsInLastGame.getBy(player);
+						assertIsNumber(count);
 
-						const opponentValue = lastGamePoints.getOpponentBy(player);
-						assertIsNumber(opponentValue);
+						const opponentCount = pointsInLastGame.getOpponentBy(player);
+						assertIsNumber(opponentCount);
 
-						return `<sup>${getLightedElem(value, opponentValue)}</sup>`;
+						return `<sup>${getLightedElem(count, opponentCount)}</sup>`;
 					}
 				]);
 			}
@@ -202,10 +202,8 @@ export default class TennisMatch extends ScoredMatch {
 			},
 			() => {
 				const receiver = this.getReceiver();
-
 				this.participantsManagerOfDualMetric.focus(receiver);
 				if (this.scorer.isAlmostWon() && !isInTieBreak(this.scorer)) {
-
 					this.stats.increase(StatId.PossibleBreakPoints, receiver);
 					this.hasPossibleBreakPoint = true;
 				}

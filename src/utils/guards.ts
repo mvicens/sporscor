@@ -1,4 +1,4 @@
-import type { Class, Defined, NonNull, Nullable } from '../types';
+import { Class, Defined, NonNull, Nullable } from '../types';
 
 export const isString = (value: unknown): value is string => typeof value === 'string';
 

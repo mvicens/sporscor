@@ -3,18 +3,18 @@ import { Player, Team, TennisMatch } from './lib';
 import sectionHtmlContent from './section.html?raw';
 
 function getHtmlElement<T extends HTMLElement>(selectors: string) {
-	const value = document.querySelector<T>(selectors);
-	assertIsNonNullable(value);
-	return value;
+	const result = document.querySelector<T>(selectors);
+	assertIsNonNullable(result);
+	return result;
 }
 
 function toElement(htmlContent: string) {
 	const
 		domParser = new DOMParser(),
 		document = domParser.parseFromString(htmlContent, 'text/html'),
-		value = document.body.firstElementChild;
-	assertIsNonNullable(value);
-	return value;
+		result = document.body.firstElementChild;
+	assertIsNonNullable(result);
+	return result;
 }
 
 export function setTheme() {
@@ -43,28 +43,27 @@ export function buildDropdown(selectors: string, content: Array<[string, VoidFun
 const
 	getSelectors = (index: number, selectors: string) => `.card:nth-child(${index + 1}) ${selectors}`,
 	isTennisMatch = (value: unknown): value is typeof TennisMatch => value === TennisMatch;
-export function addChoice(item: typeof SPORTS[number]) {
+export function addMatch(sport: typeof SPORTS[number]) {
 	const sectionElement = toElement(sectionHtmlContent);
 
 	const titleElement = sectionElement.querySelector('.card-header');
 	assertIsNonNullable(titleElement);
-	titleElement.textContent = item.name;
+	titleElement.textContent = sport.name;
 
 	const index = document.querySelectorAll('.card').length;
 
 	getHtmlElement('main').appendChild(sectionElement);
 
-	const
-		loadScoreboard = () => { setHtmlContent(getSelectors(index, '.scoreboard'), instance.getScoreboard()); },
-		loadStats = () => { setHtmlContent(getSelectors(index, '.stats'), instance.getStats()); },
-		loadPanel = () => { setHtmlContent(getSelectors(index, '.panel'), instance.getPanel()); };
+	function loadScoreboard() { setHtmlContent(getSelectors(index, '.scoreboard'), instance.getScoreboard()); }
+	function loadStats() { setHtmlContent(getSelectors(index, '.stats'), instance.getStats()); }
+	function loadPanel() { setHtmlContent(getSelectors(index, '.panel'), instance.getPanel()); }
 
-	const { class: Class } = item;
+	const { class: Class } = sport;
 	let instance: InstanceType<typeof Class>;
-	const onChange = () => {
+	function onChange() {
 		loadScoreboard();
 		loadStats();
-	};
+	}
 	if (isTennisMatch(Class)) {
 		const
 			playerOne = new Player('Player 1'),
@@ -77,25 +76,26 @@ export function addChoice(item: typeof SPORTS[number]) {
 		instance = new Class(teamOne, teamTwo, onChange);
 	}
 
-	loadPanel();
-
-	const mq = window.matchMedia('(min-width: 768px)');
-	function listener() {
-		const
-			isLessThanMediumBreakpoint = !mq.matches,
-			selectors = isLessThanMediumBreakpoint
-				? '.d-md-none .sidebar-container'
-				: '.sidebar-container.d-none';
-		getHtmlElement(getSelectors(index, selectors)).append(getHtmlElement(getSelectors(index, '.sidebar')));
-	};
-	mq.addEventListener('change', listener);
-	listener();
+	const
+		mq = window.matchMedia('(min-width: 768px)'),
+		relocateSidebar = () => {
+			const
+				isLessThanMediumBreakpoint = !mq.matches,
+				selectors = isLessThanMediumBreakpoint
+					? '.d-md-none .sidebar-container'
+					: '.sidebar-container.d-none';
+			getHtmlElement(getSelectors(index, selectors)).append(getHtmlElement(getSelectors(index, '.sidebar')));
+		};
+	mq.addEventListener('change', relocateSidebar);
+	relocateSidebar();
 
 	buildDropdown(getSelectors(index, '.sidebar'), [
 		['Scoreboard', loadScoreboard],
 		['Stats', loadStats],
 		['Panel', loadPanel]
 	]);
+
+	loadPanel();
 }
 
 const isNonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;

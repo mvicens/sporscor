@@ -1,4 +1,4 @@
-import type { InterpolationDefinition } from './types';
+import { InterpolationDefinition } from './types';
 
 export const INTERPOLATION_START_SYMBOL = '{{';
 export const INTERPOLATION_END_SYMBOL = '}}';

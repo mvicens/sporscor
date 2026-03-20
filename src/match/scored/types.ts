@@ -1,48 +1,43 @@
-import type { MatchConfig } from '..';
-import type { AnyParticipant } from '../../participant';
-import type { Callback, ClassName, Index, Show, ValueOrProvider } from '../../types';
-import { OnIncrement, type ScoreLevelDefinition, ScoreLevelDefinitions, Scorer } from './utils';
+import { MatchConfig } from '..';
+import { AnyParticipant } from '../../participant';
+import { Callback, ClassName, Index, ValueOrProvider } from '../../types';
+import { OnIncrease, ScoreLevelDefinition, ScoreLevelDefinitions, Scorer } from './utils';
 
-type ScorerConfig = {
-	scoreLevelDefinitions: ScoreLevelDefinitions;
-	onIncrement: OnIncrement[number];
-};
-
-type IsOpeningServer = Show<boolean>;
+type IsOpeningServer = boolean;
 type Serve = {
 	qtyPerPoint: number;
-	getServer: (scorer: Scorer) => AnyParticipant | IsOpeningServer;
+	getServer: Callback<[Scorer], AnyParticipant | IsOpeningServer>;
 };
-
 export type Config =
 	& MatchConfig
-	& ScorerConfig
 	& {
+		scoreLevelDefinitions: ScoreLevelDefinitions;
+		onIncrease: OnIncrease[number];
 		serve: Serve;
 		className?: ValueOrProvider<ClassName, Scorer>;
 	};
 
-type ScoreLevelConfig =
-	& Pick<ScoreLevelDefinition, 'scoreLevel' | 'target'>
-	& {
-		name: string;
-		index?: Index;
-		isConcluded: boolean;
-	};
 type Value = {
 	original: number;
 	transformed: ReturnType<NonNullable<ScoreLevelDefinition['transformer']>>;
 };
 export type GetColsCbArg = {
-	scoreLevel: ScoreLevelConfig;
+	scoreLevel: (
+		& Pick<ScoreLevelDefinition, 'scoreLevel' | 'target'>
+		& {
+			name: string;
+			index?: Index;
+			isConcluded: boolean;
+		}
+	);
 	values: {
 		focused: Value;
 		opponent: Value;
 	};
 };
 
-export type IsColsOfSetsSummarized = Show<boolean>;
+export type IsColsOfSetsSummarized = boolean;
 
-export type IsServeIndicatorInOwnCol = Show<boolean>;
+export type IsServeIndicatorInOwnCol = boolean;
 
 export type ExecuteWithServeInfo = Callback<[server: AnyParticipant, receiver: AnyParticipant, isServerWinner: boolean]>;

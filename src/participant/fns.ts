@@ -1,4 +1,4 @@
-import type { Id } from './types';
+import { Id } from './types';
 
 let id: Id = 0;
 export function getNewId() {

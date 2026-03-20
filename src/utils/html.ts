@@ -1,10 +1,10 @@
 import { ensureString, isNonNullable } from '.';
 import { CLASS_NAME_BY_ID } from '../consts';
-import type { Callback, ClassName, Html } from '../types';
+import { Callback, ClassName, Html } from '../types';
 
 export const getClassNames = (...list: Array<ClassName>) => list
 	.filter(isNonNullable)
-	.map(item => `ss-${CLASS_NAME_BY_ID[item]}`)
+	.map(id => `ss-${CLASS_NAME_BY_ID[id]}`)
 	.join(' ');
 
 export function getLightedElem<T extends number>(

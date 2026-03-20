@@ -1,14 +1,12 @@
 import { CLASS_NAME_BY_ID } from './consts';
 
-export type Show<T> = T & { __show?: never; }; // In order to force visualization in IDE. So that, e.g.:
-type Something = Show<string>; // With this…
-const something: Something = ''; something; // "Something" displayed instead "string"
-
 export type Args = Array<any>;
 
 export type Class = new (...args: Args) => unknown;
 
-export type Index = Show<number>;
+export type Index = number;
+
+export type Qty = number;
 
 export type Defined<T = unknown> = T & ({} | null);
 
@@ -19,19 +17,19 @@ export type OrNullable<T> = T | Nullable;
 
 export type OneOrMany<T> = T | Array<T>;
 
-export type Callback<T extends Args, U = void> = (...args: T) => U;
+export type Callback<T extends Args, R = void> = (...args: T) => R;
+type Provider<T, U extends Args> = Callback<U, T>;
+export type Producer<T> = Callback<[], T>;
+export type EventHandler<T extends Args = []> = Callback<T>;
 
 type Entry<K, V> = [key: K, value: V];
 export type MapIterable<K, V> = Array<Entry<K, V>>;
 
-type Provider<T, U extends Args> = (...args: U) => T;
 export type ValueOrProvider<T, U> = T | Provider<T, [U]>;
 
-export type EventListener<T extends Args = []> = Callback<T>;
+export type Msg = string;
 
-export type Msg = Show<string>;
-
-export type Html = Show<string>;
+export type Html = string;
 
 export type TableHeaderScope = 'col' | 'row';
 

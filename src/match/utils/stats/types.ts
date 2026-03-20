@@ -1,9 +1,9 @@
 import { Sport } from '../..';
-import type { Html, Show, ValueOrProvider } from '../../../types';
+import { Html, ValueOrProvider } from '../../../types';
 import { DualMetric } from '../../../utils';
-import type { Id } from './enums';
+import { Id } from './enums';
 
-export type Value = Show<number>;
+export type Value = number;
 export type Qty = DualMetric<Value>;
 export type Data = Partial<Record<Id, Qty>>;
 

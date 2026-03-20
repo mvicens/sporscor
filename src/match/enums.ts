@@ -17,7 +17,7 @@ export enum Stage {
 
 export enum RestType {
 	// Scheduled
-	breakPerPhase, // Set, part…
+	breakPerPhase, // Intermission between games, sets, quarters…
 	breakPerPoint,
 
 	Timeout

@@ -1,9 +1,9 @@
 import { Timer as EasyTimer } from 'easytimer.js';
 import { EMPTY_HTML } from '../../../../consts';
-import type { Callback, Html } from '../../../../types';
+import { Callback, Html } from '../../../../types';
 import { assertIsDefined, DeveloperError, ensureNumber, ensureString, isDefined, isPositiveNumber, isString, isUndefined, padStartNumber, verifyIsNonNegativeInteger, verifyIsNumberGreaterThan, verifyIsNumberLessThan, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_UPDATE } from './consts';
-import type { ExternalItem, Id, InternalItem } from './types';
+import { ExternalItem, Id, InternalItem } from './types';
 
 export default class Timer {
 	constructor(items: Array<ExternalItem>) {
@@ -103,7 +103,7 @@ export default class Timer {
 	}
 
 	#getItem(id: Id) {
-		const item = this.#items.find(({ id: searchedId }) => searchedId === id);
+		const item = this.#items.find(({ id: currentId }) => currentId === id);
 		if (isUndefined(item))
 			throw new DeveloperError('ID not found');
 		return item;

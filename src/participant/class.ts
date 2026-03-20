@@ -1,9 +1,9 @@
 import { Type } from './enums';
 import { getNewId } from './fns';
-import type { Id, Name } from './types';
+import { Id } from './types';
 
 export default abstract class Participant {
-	constructor(private readonly type: Type, private readonly name: Name) {
+	constructor(private readonly type: Type, private readonly name: string) {
 		this.id = getNewId();
 	}
 

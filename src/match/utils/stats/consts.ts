@@ -1,6 +1,6 @@
 import { Sport } from '../..';
 import { Id } from './enums';
-import type { LabelById } from './types';
+import { LabelById } from './types';
 
 export const LABEL_BY_ID: LabelById = {
 	[Id.TotalPoints]: 'Total Points',

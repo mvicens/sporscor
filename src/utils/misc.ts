@@ -1,7 +1,7 @@
 import { isFunction } from '.';
-import type { ValueOrProvider } from '../types';
+import { ValueOrProvider } from '../types';
 
-export const noop = () => { };
+export function noop() { }
 export const identity = <T>(arg: T) => arg;
 
 export const isMemberOf = <T extends object>(name: PropertyKey, receiver: T): name is keyof T => name in receiver;

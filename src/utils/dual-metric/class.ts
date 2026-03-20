@@ -1,7 +1,7 @@
 import { assertIsNonNullable, assertIsNumber } from '..';
-import type { AnyParticipant } from '../../participant';
-import type { Callback } from '../../types';
-import type { NumericValue, ParticipantNumeral, ParticipantsManager, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
+import { AnyParticipant } from '../../participant';
+import { Callback } from '../../types';
+import { NumericValue, ParticipantNumeral, ParticipantsManager, ParticipantState, ReturningCb, ValueByParticipantNumeral, VoidCb } from './types';
 
 export default class DualMetric<T = NumericValue> {
 	constructor(participantsManager: ParticipantsManager, initialValue: T, initialValueOfTwo: T = initialValue) {
@@ -24,14 +24,14 @@ export default class DualMetric<T = NumericValue> {
 
 	getBy(participant: AnyParticipant) {
 		this.#participantsManager.verify(participant);
-		return this.#values[this.#participantsManager.getNumeral(participant)];
+		return this.#values[this.#participantsManager.getNumeralOf(participant)];
 	}
 	getOpponentBy(participant: AnyParticipant) {
 		this.#participantsManager.verify(participant);
-		return this.getBy(this.#participantsManager.getOpponentBy(participant));
+		return this.getBy(this.#participantsManager.getOpponentOf(participant));
 	}
 
-	#getParticipantByNumeral(numeral: ParticipantNumeral) { return this.#participantsManager.valueByNumeral[numeral]; }
+	#getParticipantByNumeral = (numeral: ParticipantNumeral) => this.#participantsManager.valueByNumeral[numeral];
 
 	#getParticipantBy(state: ParticipantState) {
 		const { numeralByState } = this.#participantsManager;
@@ -47,7 +47,7 @@ export default class DualMetric<T = NumericValue> {
 	get = () => this.getBy(this.#getFocusedParticipant());
 	getOpponent = () => this.getBy(this.#getOpponentParticipant());
 
-	#getOf(participantNumeral: ParticipantNumeral) { return this.getBy(this.#participantsManager.valueByNumeral[participantNumeral]); }
+	#getOf = (participantNumeral: ParticipantNumeral) => this.getBy(this.#participantsManager.valueByNumeral[participantNumeral]);
 	getOfOne = () => this.#getOf('one');
 	getOfTwo = () => this.#getOf('two');
 
@@ -92,7 +92,7 @@ export default class DualMetric<T = NumericValue> {
 
 	#setBy(participant: AnyParticipant, value: T) {
 		this.#participantsManager.verify(participant);
-		this.#values[this.#participantsManager.getNumeral(participant)] = value;
+		this.#values[this.#participantsManager.getNumeralOf(participant)] = value;
 	}
 
 	set(value: T) {
@@ -106,21 +106,21 @@ export default class DualMetric<T = NumericValue> {
 		const participant = this.#participantsManager.valueByNumeral[participantNumeral];
 		this.#setBy(participant, value);
 	}
-	setOfOne(value: T) {
+	#setOfOne(value: T) {
 		this.#setOf('one', value);
 	}
-	setOfTwo(value: T) {
+	#setOfTwo(value: T) {
 		this.#setOf('two', value);
 	}
 
-	// setAll(valueOfOne: T, valueOfTwo: T) {
-	// 	this.setOfOne(valueOfOne);
-	// 	this.setOfTwo(valueOfTwo);
+	// #setAll(valueOfOne: T, valueOfTwo: T) {
+	// 	this.#setOfOne(valueOfOne);
+	// 	this.#setOfTwo(valueOfTwo);
 	// }
 
 	#resetBy(participant: AnyParticipant) {
 		this.#participantsManager.verify(participant);
-		this.#setBy(participant, this.#initialValues[this.#participantsManager.getNumeral(participant)]);
+		this.#setBy(participant, this.#initialValues[this.#participantsManager.getNumeralOf(participant)]);
 	}
 	#reset() {
 		this.#resetBy(this.#getFocusedParticipant());
@@ -134,7 +134,7 @@ export default class DualMetric<T = NumericValue> {
 		this.resetOpponent();
 	}
 
-	increment() {
+	increase() {
 		let value = this.get();
 		assertIsNumber(value);
 		value++;
@@ -145,11 +145,11 @@ export default class DualMetric<T = NumericValue> {
 		const
 			valueOfOne = this.getOfOne(),
 			valueOfTwo = this.getOfTwo();
-		this.setOfOne(valueOfTwo);
-		this.setOfTwo(valueOfOne);
+		this.#setOfOne(valueOfTwo);
+		this.#setOfTwo(valueOfOne);
 	}
 
-	#isNumberSatisfying(comparedValue: NumericValue, predicate: (value: NumericValue, comparedValue: NumericValue) => boolean) {
+	#isNumberSatisfying(comparedValue: NumericValue, predicate: Callback<[value: NumericValue, comparedValue: NumericValue], boolean>) {
 		const value = this.get();
 		assertIsNumber(value);
 		return predicate(value, comparedValue);
@@ -159,7 +159,7 @@ export default class DualMetric<T = NumericValue> {
 	// isEqualTo = (comparedValue: NumericValue) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value === comparedValue);
 	// isAtLeast = (comparedValue: NumericValue) => this.#isNumberSatisfying(comparedValue, (value, comparedValue) => value >= comparedValue);
 
-	isDiffAtLeast(qty: NumericValue) {
+	isDiffAtLeast(value: NumericValue) {
 		const valueOfOne = this.getOfOne();
 		assertIsNumber(valueOfOne);
 
@@ -167,7 +167,7 @@ export default class DualMetric<T = NumericValue> {
 		assertIsNumber(valueOfTwo);
 
 		const diff = Math.abs(valueOfOne - valueOfTwo);
-		return diff >= qty;
+		return diff >= value;
 	}
 
 	#forEach(cb: VoidCb<T, AnyParticipant>) {

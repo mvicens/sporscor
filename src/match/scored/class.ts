@@ -1,27 +1,23 @@
 import pluralize from 'pluralize';
-import type { StatsList } from '..';
-import Match, { RestType } from '..';
+import Match, { RestType, StatsList } from '..';
 import { EMPTY_HTML } from '../../consts';
-import type { AnyParticipant } from '../../participant';
-import type { Callback, ClassName, Html, ValueOrProvider } from '../../types';
+import { AnyParticipant } from '../../participant';
+import { Callback, ClassName, Html, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, getClassNames, getLightedElem, getOrdinal, identity, info, isBoolean, isDefined, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
-import type { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
-import { OnIncrement, ScoreLevel, Scorer, SHOULD_CONTINUE_SCORER_LOOP, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
+import { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
+import { OnIncrease, ScoreLevel, Scorer, SHOULD_CONTINUE_SCORER_LOOP, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 
 import './css/index.css';
 
 export default abstract class ScoredMatch extends Match {
-	private verifyConfigIsOk(config: Config) {
-		verifyIsPositiveInteger(config.serve.qtyPerPoint);
-	}
 	constructor(private readonly ownConfig: Config) {
+		validate();
+
 		super(ownConfig);
 
-		this.verifyConfigIsOk(ownConfig);
-
-		const onIncrement: OnIncrement = [
-			ownConfig.onIncrement,
+		const onIncrease: OnIncrease = [
+			ownConfig.onIncrease,
 			{
 				[ScoreLevel.Point]: () => { this.resetServes(); },
 				[ScoreLevel.Set]: () => { this.goToRest(RestType.breakPerPhase); },
@@ -31,7 +27,7 @@ export default abstract class ScoredMatch extends Match {
 			scoreLevelDefinitions: ownConfig.scoreLevelDefinitions,
 			participantsManagerOfDualMetric: this.participantsManagerOfDualMetric,
 			events: {
-				onIncrement,
+				onIncrease,
 				onFinish: () => { this.finish(); }
 			}
 		});
@@ -42,6 +38,10 @@ export default abstract class ScoredMatch extends Match {
 			StatId.Aces,
 			StatId.ServiceErrors
 		);
+
+		function validate() {
+			verifyIsPositiveInteger(ownConfig.serve.qtyPerPoint);
+		}
 	}
 
 	protected readonly scorer: Scorer;
@@ -58,7 +58,7 @@ export default abstract class ScoredMatch extends Match {
 			const isOpeningServer = participantOrIsOpeningServer;
 			return isOpeningServer
 				? this.openingServer
-				: this.participantsManagerOfDualMetric.getOpponentBy(this.openingServer);
+				: this.participantsManagerOfDualMetric.getOpponentOf(this.openingServer);
 		}
 
 		const participant = participantOrIsOpeningServer;
@@ -67,7 +67,7 @@ export default abstract class ScoredMatch extends Match {
 	protected getReceiver() {
 		const server = this.getServer();
 		assertIsDefined(server);
-		return this.participantsManagerOfDualMetric.getOpponentBy(server);
+		return this.participantsManagerOfDualMetric.getOpponentOf(server);
 	}
 
 	private getClassName = () => resolveValueOrProvider(this.ownConfig.className, this.scorer);
@@ -89,29 +89,30 @@ export default abstract class ScoredMatch extends Match {
 			if (this.isFinished() && !isScoreLevelOfSet)
 				return SHOULD_INTERRUPT_SCORER_LOOP;
 
-			const { target } = item;
-			function getQty(qty: DualMetric, isOpponent = false) {
-				if (isUndefined(participant))
-					return NaN;
+			const
+				{ target } = item,
+				getValue = (count: DualMetric, isOpponent = false) => {
+					if (isUndefined(participant))
+						return NaN;
 
-				const
-					{ transformer = identity } = item,
-					focused = qty.getBy(participant),
-					opponent = qty.getOpponentBy(participant);
-				return isOpponent
-					? transformer(opponent, focused, scorer)
-					: transformer(focused, opponent, scorer);
-			}
-			const getValues = (qty: DualMetric) => ({
-				focused: {
-					original: isDefined(participant) ? qty.getBy(participant) : NaN,
-					transformed: getQty(qty)
+					const
+						{ transformer = identity } = item,
+						focused = count.getBy(participant),
+						opponent = count.getOpponentBy(participant);
+					return isOpponent
+						? transformer(opponent, focused, scorer)
+						: transformer(focused, opponent, scorer);
 				},
-				opponent: {
-					original: isDefined(participant) ? qty.getOpponentBy(participant) : NaN,
-					transformed: getQty(qty, true)
-				}
-			});
+				getValues = (count: DualMetric) => ({
+					focused: {
+						original: isDefined(participant) ? count.getBy(participant) : NaN,
+						transformed: getValue(count)
+					},
+					opponent: {
+						original: isDefined(participant) ? count.getOpponentBy(participant) : NaN,
+						transformed: getValue(count, true)
+					}
+				});
 
 			const isSummarizedColShown = !isScoreLevelOfSet || isColsOfSetsSummarized;
 			if (isSummarizedColShown) {
@@ -133,7 +134,7 @@ export default abstract class ScoredMatch extends Match {
 				isColsOfSetsDetailed = !isColsOfSetsSummarized,
 				isDetailedColOfSetShown = isScoreLevelOfSet && isColsOfSetsDetailed;
 			if (isDetailedColOfSetShown)
-				scorer.getConcludedDetailedCountsOf(scoreLevel).forEach((qty, i) => {
+				scorer.getConcludedDetailedCountsOf(scoreLevel).forEach((count, i) => {
 					html += cb({
 						scoreLevel: {
 							scoreLevel,
@@ -142,7 +143,7 @@ export default abstract class ScoredMatch extends Match {
 							index: i,
 							isConcluded: true
 						},
-						values: getValues(qty)
+						values: getValues(count)
 					});
 				});
 
@@ -272,6 +273,8 @@ export default abstract class ScoredMatch extends Match {
 		}
 	}
 
+	protected resetServes() { this.failedServes = 0; }
+
 	private verifyOpeningServerIsRequired() {
 		if (isUndefined(this.openingServer))
 			throw new Error('An opening server is required');
@@ -292,7 +295,6 @@ export default abstract class ScoredMatch extends Match {
 	}
 
 	protected failedServes?: Config['serve']['qtyPerPoint'];
-	protected resetServes() { this.failedServes = 0; }
 	/** Logs a serve as fault. */
 	public logServeAsFault(): void {
 		this.verifyIsPlaying();
@@ -362,7 +364,7 @@ export default abstract class ScoredMatch extends Match {
 		executeWithServeInfo(server, receiver, isServerWinner);
 
 		this.participantsManagerOfDualMetric.focus(participant);
-		this.scorer.increment();
+		this.scorer.increase();
 		executeAtLast();
 
 		this.dispatchEvent();

@@ -1,19 +1,19 @@
 import { Player, Team } from '../participant';
-import type { Show } from '../types';
+import { EventHandler, Producer } from '../types';
 import { DualMetric } from '../utils';
 import { Sport } from './enums';
 import { StatId } from './utils';
 
 type ConfigTimeouts = {
-	qtyPerPhase: () => number;
-	isDoneable: () => boolean;
+	qtyPerPhase: Producer<number>;
+	isDoneable: Producer<boolean>;
 };
 
 type Participants = [playerOne: Player, playerTwo: Player] | [teamOne: Team, teamTwo: Team]; // If dual metric, it fails
 export type Config = {
 	sport: Sport;
 	participants: Participants;
-	onChange: VoidFunction;
+	onChange: EventHandler;
 	timeouts?: ConfigTimeouts;
 };
 
@@ -28,8 +28,7 @@ type Ratio = [StatId, StatId, isRatio: false];
 type Percentage = [StatId, StatId, isPercentage: true];
 export type StatsList = Array<AbsoluteValue | Ratio | Percentage>;
 
-type Text = Show<string>;
-export type MethodName = Show<string>;
-export type WithParticipantOne = Show<boolean>;
-type Btns = Array<[Text, MethodName, WithParticipantOne?]>;
+export type MethodName = string;
+export type WithParticipantOne = boolean;
+type Btns = Array<[text: string, MethodName, WithParticipantOne?]>;
 export type PanelDefinition = Array<Btns>;

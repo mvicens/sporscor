@@ -1,24 +1,20 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
-import { type AnyParticipant, Team } from '../participant';
-import type { ClassName, Defined, Html, OneOrMany, TableHeaderScope } from '../types';
+import { AnyParticipant, Team } from '../participant';
+import { ClassName, Defined, Html, OneOrMany, TableHeaderScope } from '../types';
 import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureArray, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getParticipantsManagerOfDualMetric, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, ParticipantsManagerOfDualMetric, resolveValueOrProvider, upperFirst, warn } from '../utils';
 import { RestType, Stage } from './enums';
-import type { Config, MethodName, PanelDefinition, StatsList, Timeouts, WithParticipantOne } from './types';
+import { Config, MethodName, PanelDefinition, StatsList, Timeouts, WithParticipantOne } from './types';
 import { Cache, CacheId, EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
 import './css/index.css';
 
 export default abstract class Match {
-	private verifyEachParticipantIsUnique(valueOfOne: AnyParticipant, valueOfTwo: AnyParticipant) {
-		if (valueOfOne.getId() === valueOfTwo.getId())
-			throw new Error('Both participants are the same one');
-	}
 	constructor(private readonly config: Config) {
-		const [participantOne, participantTwo] = config.participants;
+		validate();
 
-		this.verifyEachParticipantIsUnique(participantOne, participantTwo);
-
-		const participantsManagerOfDualMetric = getParticipantsManagerOfDualMetric(participantOne, participantTwo);
+		const
+			[participantOne, participantTwo] = config.participants,
+			participantsManagerOfDualMetric = getParticipantsManagerOfDualMetric(participantOne, participantTwo);
 
 		this.participantsManagerOfDualMetric = participantsManagerOfDualMetric;
 
@@ -33,6 +29,12 @@ export default abstract class Match {
 				...timeouts,
 				doneQty: new DualMetric(participantsManagerOfDualMetric, 0)
 			};
+
+		function validate() {
+			const [{ getId: getIdOfOne }, { getId: getIdOfTwo }] = config.participants;
+			if (getIdOfOne() === getIdOfTwo())
+				throw new Error('Both IDs are the same one');
+		}
 	}
 
 	protected participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric;
@@ -81,16 +83,16 @@ export default abstract class Match {
 	protected stats: Stats;
 	protected getUltimateStats(statsList: StatsList, className?: ClassName) {
 		const
-			ultimateStatsList = [
+			currentStatsList = [
 				StatId.TotalPoints,
 				...statsList
 			],
 			getTh = (scope: TableHeaderScope, className: ClassName, content = EMPTY_HTML) => `<th scope="${scope}" class="${getClassNames(className)}">${content}</th>`;
 		let html: Html = this.wasPlayed
-			? ultimateStatsList
-				.map(item => {
+			? currentStatsList
+				.map(stat => {
 					const
-						arrayedItem = !isArray(item) ? ([item] as [StatId]) : item, // TODO: Implement "ensureTuple"?
+						arrayedItem = !isArray(stat) ? ([stat] as [StatId]) : stat, // TODO: Implement "ensureTuple"?
 						[statId, secondaryStatId, isPercentage] = arrayedItem;
 
 					const label = resolveValueOrProvider(LABEL_BY_STAT_ID[statId], this.config.sport);
@@ -196,9 +198,9 @@ export default abstract class Match {
 				.join('\n');
 			html = (
 				`<div>
-				<h1>Panel</h1>
-				${html}
-			</div>`
+					<h1>Panel</h1>
+					${html}
+				</div>`
 			);
 			html = this.getRootHtml(html, ['panel']);
 
@@ -252,7 +254,7 @@ export default abstract class Match {
 
 	protected dispatchEvent(cacheIds?: OneOrMany<CacheId>) {
 		if (isDefined(cacheIds))
-			ensureArray(cacheIds).forEach(item => { this.cache.clear(item); });
+			ensureArray(cacheIds).forEach(cacheId => { this.cache.clear(cacheId); });
 
 		this.config.onChange();
 	}
@@ -321,7 +323,7 @@ export default abstract class Match {
 		this.verifyAllTimeoutsAreNotDone(team);
 
 		this.participantsManagerOfDualMetric.focus(team);
-		this.timeouts.doneQty.increment();
+		this.timeouts.doneQty.increase();
 
 		this.goToRest(RestType.Timeout);
 	}

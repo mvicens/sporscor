@@ -1,27 +1,13 @@
-import type { Callback, Index, MapIterable } from '../../../../types';
+import { Callback, Index, MapIterable } from '../../../../types';
 import { assertIsDefined, assertIsNumber, assertIsRecord, DeveloperError, DualMetric, isDefined, isNumber, ParticipantsManagerOfDualMetric, resolveValueOrProvider, verifyIsOddNumber, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_CONTINUE, SHOULD_INTERRUPT } from './consts';
 import { ScoreLevel } from './enums';
 import { assertIsCount, assertIsCountHierarchy, isCountHierarchy } from './fns';
-import type { Config, Count, CountHierarchy, CountHierarchyChild, DefinitionByScoreLevel, IsHigherScoreLevelIncremented, LoopCb, ScoreLevelDefinition } from './types';
+import { Config, Count, CountHierarchy, CountHierarchyChild, DefinitionByScoreLevel, IsHigherScoreLevelAffected, LoopCb, ScoreLevelDefinition } from './types';
 
 export default class Scorer {
-	#verifyConfigIsOk(config: Config) {
-		const { scoreLevelDefinitions } = config;
-
-		const firstScoreLevelDefinition = scoreLevelDefinitions.at(0);
-		assertIsNumber(firstScoreLevelDefinition);
-		const totalOfSets = firstScoreLevelDefinition;
-		verifyIsPositiveInteger(totalOfSets);
-		verifyIsOddNumber(totalOfSets);
-
-		const lastScoreLevelDefinition = scoreLevelDefinitions.at(-1);
-		assertIsRecord(lastScoreLevelDefinition);
-		if (lastScoreLevelDefinition.scoreLevel !== ScoreLevel.Point)
-			throw new DeveloperError('Last score level definition must be point\'s');
-	}
 	constructor(config: Config) {
-		this.#verifyConfigIsOk(config);
+		validate();
 
 		const
 			scoreLevels: Array<ScoreLevel> = [],
@@ -29,10 +15,10 @@ export default class Scorer {
 				if (isNumber(item)) {
 					const
 						totalOfSets = item,
-						target = (totalOfSets + 1) / 2;
+						minToWinMatch = (totalOfSets + 1) / 2;
 					item = {
 						scoreLevel: ScoreLevel.Set,
-						target,
+						target: minToWinMatch,
 						shouldWinByTwo: false
 					};
 				}
@@ -50,16 +36,30 @@ export default class Scorer {
 
 		const mainCountHierarchy = this.#getBuiltCountHierarchyChildOf(ScoreLevel.Set);
 		assertIsCountHierarchy(mainCountHierarchy);
-		this.mainCountHierarchy = mainCountHierarchy;
+		this.#mainCountHierarchy = mainCountHierarchy;
 
 		this.#events = config.events;
+
+		function validate() {
+			const { scoreLevelDefinitions } = config;
+
+			const totalOfSets = scoreLevelDefinitions.at(0);
+			assertIsNumber(totalOfSets);
+			verifyIsPositiveInteger(totalOfSets);
+			verifyIsOddNumber(totalOfSets);
+
+			const lastScoreLevelDefinition = scoreLevelDefinitions.at(-1);
+			assertIsRecord(lastScoreLevelDefinition);
+			if (lastScoreLevelDefinition.scoreLevel !== ScoreLevel.Point)
+				throw new DeveloperError('Last score level definition must be point\'s');
+		}
 	}
 
 	#definitionByScoreLevel: DefinitionByScoreLevel;
 
 	#participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric;
 	#scoreLevels: Array<ScoreLevel>;
-	mainCountHierarchy: CountHierarchy;
+	#mainCountHierarchy: CountHierarchy;
 
 	#events: Config['events'];
 
@@ -85,7 +85,7 @@ export default class Scorer {
 	isAlmostWon = // One point to win
 		() => this.#isWon(ScoreLevel.Point, count => {
 			const result = count.clone();
-			result.increment(); // Hypothetical
+			result.increase(); // Hypothetical
 			return result;
 		});
 
@@ -108,11 +108,11 @@ export default class Scorer {
 
 	#getHigherTo(scoreLevel: ScoreLevel) {
 		let result: undefined | ScoreLevel;
-		this.#forEachScoreLevel(item => {
-			if (item === scoreLevel)
+		this.#forEachScoreLevel(currentScoreLevel => {
+			if (currentScoreLevel === scoreLevel)
 				return SHOULD_INTERRUPT;
 
-			result = item;
+			result = currentScoreLevel;
 			return SHOULD_CONTINUE;
 		});
 		assertIsDefined(result); // Fails if score level is set
@@ -123,13 +123,13 @@ export default class Scorer {
 		let
 			result: undefined | ScoreLevel,
 			isNext = false;
-		this.#forEachScoreLevel(item => {
+		this.#forEachScoreLevel(currentScoreLevel => {
 			if (isNext) {
-				result = item;
+				result = currentScoreLevel;
 				return SHOULD_INTERRUPT;
 			}
 
-			if (item === scoreLevel)
+			if (currentScoreLevel === scoreLevel)
 				isNext = true;
 			return SHOULD_CONTINUE;
 		});
@@ -137,9 +137,9 @@ export default class Scorer {
 	}
 
 	#getLastCountHierarchyChildOf(scoreLevel: ScoreLevel): CountHierarchyChild {
-		let result: CountHierarchyChild = this.mainCountHierarchy;
-		this.#forEachScoreLevel(item => {
-			if (item === scoreLevel)
+		let result: CountHierarchyChild = this.#mainCountHierarchy;
+		this.#forEachScoreLevel(currentScoreLevel => {
+			if (currentScoreLevel === scoreLevel)
 				return SHOULD_INTERRUPT;
 
 			assertIsCountHierarchy(result);
@@ -161,10 +161,10 @@ export default class Scorer {
 	}
 
 	getCountBy(...indexes: Array<Index>) {
-		let result: CountHierarchyChild = this.mainCountHierarchy;
-		indexes.forEach(item => {
+		let result: CountHierarchyChild = this.#mainCountHierarchy;
+		indexes.forEach(index => {
 			assertIsCountHierarchy(result);
-			const newResult = result.detailed.at(item);
+			const newResult = result.detailed.at(index);
 			assertIsDefined(newResult);
 			result = newResult;
 		});
@@ -173,14 +173,12 @@ export default class Scorer {
 	}
 
 	getConcludedDetailedCountsOf(scoreLevel: ScoreLevel) {
-		const lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(scoreLevel);
-		assertIsCountHierarchy(lastCountHierarchyChild);
-		const lastCountHierarchy = lastCountHierarchyChild;
-
+		const lastCountHierarchy = this.#getLastCountHierarchyChildOf(scoreLevel);
+		assertIsCountHierarchy(lastCountHierarchy);
 		const
-			detailedCounts = lastCountHierarchy.detailed.map(item => {
-				assertIsCountHierarchy(item);
-				return item.summarized;
+			detailedCounts = lastCountHierarchy.detailed.map(countHierarchy => {
+				assertIsCountHierarchy(countHierarchy);
+				return countHierarchy.summarized;
 			}),
 			concludedTotal = lastCountHierarchy.summarized.getTotal();
 		return detailedCounts.slice(0, concludedTotal);
@@ -189,40 +187,38 @@ export default class Scorer {
 	getCountsTotalOf(scoreLevel: ScoreLevel) {
 		const
 			higherScoreLevel = this.#getHigherTo(scoreLevel),
-			lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(higherScoreLevel);
-		assertIsCountHierarchy(lastCountHierarchyChild);
-		const lastCountHierarchy = lastCountHierarchyChild;
-
+			lastCountHierarchy = this.#getLastCountHierarchyChildOf(higherScoreLevel);
+		assertIsCountHierarchy(lastCountHierarchy);
 		return lastCountHierarchy.detailed
-			.map(item => {
-				assertIsCountHierarchy(item);
-				return item.summarized.getTotal();
+			.map(countHierarchy => {
+				assertIsCountHierarchy(countHierarchy);
+				return countHierarchy.summarized.getTotal();
 			})
 			.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 	}
 
-	#increment(scoreLevel: ScoreLevel) {
+	#increase(scoreLevel: ScoreLevel) {
 		const
 			lastCountHierarchyChild = this.#getLastCountHierarchyChildOf(scoreLevel),
 			count = isCountHierarchy(lastCountHierarchyChild)
 				? lastCountHierarchyChild.summarized
 				: lastCountHierarchyChild;
-		count.increment();
+		count.increase();
 	}
-	increment() { // Point
+	increase() { // Point
 		this.#forEachScoreLevelDefinition(
 			item => {
 				const
 					{ scoreLevel } = item,
-					dispatchEvent = (isHigherScoreLevelIncremented: IsHigherScoreLevelIncremented) => {
-						this.#events.onIncrement.forEach(eventListenerByScoreLevel => {
-							const eventListener = eventListenerByScoreLevel[scoreLevel];
-							if (isDefined(eventListener))
-								eventListener(this, isHigherScoreLevelIncremented);
+					dispatchEvent = (isHigherScoreLevelAffected: IsHigherScoreLevelAffected) => {
+						this.#events.onIncrease.forEach(eventHandlerByScoreLevel => {
+							const eventHandler = eventHandlerByScoreLevel[scoreLevel];
+							if (isDefined(eventHandler))
+								eventHandler(this, isHigherScoreLevelAffected);
 						});
 					};
 
-				this.#increment(scoreLevel);
+				this.#increase(scoreLevel);
 
 				const isWon = this.#isWon(scoreLevel);
 				if (!isWon) {

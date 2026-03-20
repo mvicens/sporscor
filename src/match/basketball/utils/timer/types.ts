@@ -1,13 +1,13 @@
 import Timer from 'easytimer.js';
-import type { Html, Show } from '../../../../types';
+import { EventHandler, Html } from '../../../../types';
 
-type Seconds = Show<number>;
+type Seconds = number;
 export type ExternalItem = {
 	id: string;
 	initialTime: Seconds;
 	decimaledTime?: Seconds;
-	onChange: VoidFunction;
-	onFinish?: VoidFunction; // If defined, it is countdown
+	onChange: EventHandler;
+	onFinish?: EventHandler; // If defined, it is countdown
 };
 
 type ShouldUpdate = true;

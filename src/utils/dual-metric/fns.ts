@@ -1,10 +1,9 @@
 import { assertIsDefined, DeveloperError, isDefined } from '..';
-import type { AnyParticipant } from '../../participant';
-import type { ParticipantNumeral, ParticipantsManager } from './types';
+import { AnyParticipant } from '../../participant';
+import { ParticipantNumeral, ParticipantsManager } from './types';
 
-export const getParticipantsManager = (valueOfOne: AnyParticipant, valueOfTwo: AnyParticipant): ParticipantsManager => {
-	if (valueOfOne.getId() === valueOfTwo.getId())
-		throw new DeveloperError('Both participants are the same one');
+export function getParticipantsManager(valueOfOne: AnyParticipant, valueOfTwo: AnyParticipant): ParticipantsManager {
+	validate();
 
 	const getOpponentNumeral = (value: ParticipantNumeral): ParticipantNumeral => value === 'one' ? 'two' : 'one';
 
@@ -14,23 +13,23 @@ export const getParticipantsManager = (valueOfOne: AnyParticipant, valueOfTwo: A
 			two: valueOfTwo
 		},
 		numeralByState: null,
-		findNumeral: function (value: AnyParticipant) {
+		findNumeralOf: function (participant: AnyParticipant) {
 			let numeral: undefined | ParticipantNumeral;
-			const id = value.getId();
-			Object.entries(this.valueByNumeral).forEach(([searchedParticipantNumeral, { getId }]) => {
-				const comparedId = getId();
-				if (comparedId === id)
-					numeral = searchedParticipantNumeral as ParticipantNumeral;
+			const id = participant.getId();
+			Object.entries(this.valueByNumeral).forEach(([currentNumeral, { getId }]) => {
+				const currentId = getId();
+				if (currentId === id)
+					numeral = currentNumeral as ParticipantNumeral;
 			});
 			return numeral;
 		},
-		getNumeral: function (value: AnyParticipant) {
-			const numeral = this.findNumeral(value);
+		getNumeralOf: function (participant: AnyParticipant) {
+			const numeral = this.findNumeralOf(participant);
 			assertIsDefined(numeral);
 			return numeral;
 		},
-		getOpponentBy: function (value: AnyParticipant) {
-			let numeral = this.getNumeral(value);
+		getOpponentOf: function (value: AnyParticipant) {
+			let numeral = this.getNumeralOf(value);
 			numeral = getOpponentNumeral(numeral);
 
 			value = this.valueByNumeral[numeral];
@@ -41,8 +40,8 @@ export const getParticipantsManager = (valueOfOne: AnyParticipant, valueOfTwo: A
 			const
 				id = value.getId(),
 				isRegistered = Object.values(this.valueByNumeral).some(({ getId }) => {
-					const comparedId = getId();
-					return comparedId === id;
+					const currentId = getId();
+					return currentId === id;
 				});
 			if (!isRegistered) {
 				if (withUsualError)
@@ -54,7 +53,7 @@ export const getParticipantsManager = (valueOfOne: AnyParticipant, valueOfTwo: A
 		},
 		focus: function (value: AnyParticipant) {
 			const
-				numeral = this.findNumeral(value),
+				numeral = this.findNumeralOf(value),
 				isRegistered = isDefined(numeral);
 
 			if (!isRegistered)
@@ -66,4 +65,9 @@ export const getParticipantsManager = (valueOfOne: AnyParticipant, valueOfTwo: A
 			};
 		}
 	};
-};
+
+	function validate() {
+		if (valueOfOne.getId() === valueOfTwo.getId())
+			throw new DeveloperError('Both participants are the same one');
+	}
+}

@@ -1,12 +1,12 @@
-import Match, { IS_PERCENTAGE_STAT_ID, RestType, Sport } from '..';
+import Match, { IS_PERCENTAGE_STAT_ID, MatchStage, RestType, Sport } from '..';
 import { EMPTY_HTML } from '../../consts';
 import { Team } from '../../participant';
-import { DualMetric, assertIsDefined, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
-import { Stage } from '../enums';
+import { Qty } from '../../types';
+import { assertIsDefined, DualMetric, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
 import { CacheId, getInterpolation, InterpolationDefinition, StatId } from '../utils';
 import { DECIMALED_MINUTES, DECIMALED_SHOT_CLOCK_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_SHOT_CLOCK_SECONDS, LAST_PART_OF_FIRST_HALF, MAIN_CLOCK_ID, PARTS, SHOT_CLOCK_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
-import type { IsSuccessful, OpeningBallPossessor, Parts, Qty } from './types';
-import { Timer, type TimerId, type TimerItem } from './utils';
+import { IsSuccessful, OpeningBallPossessor, Parts } from './types';
+import { Timer, TimerId, TimerItem } from './utils';
 
 /** Represents a basketball match. */
 export default class BasketballMatch extends Match {
@@ -96,23 +96,23 @@ export default class BasketballMatch extends Match {
 					};
 				return (
 					`<thead>
-							<tr>
-								${ths.join('')}
-								${ths.reverse().join('')}
-								${!isStarted ? EMPTY_HTML : '<th scope="col">Part</th>'}
-								${!isStarted ? EMPTY_HTML : '<th scope="col">Time</th>'}
-								${!isSomeBallPossession ? EMPTY_HTML : '<th scope="col">Possession</th>'}
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								${bodyCells(false).join('')}
-								${bodyCells(true).reverse().join('')}
-								${!isStarted ? EMPTY_HTML : `<td>${getOrdinal(this.parts.current)}</td>`}
-								${!isStarted ? EMPTY_HTML : `<td>${getInterpolation('mainClock', this.participantsManagerOfDualMetric)}</td>`}
-								${!isSomeBallPossession ? EMPTY_HTML : `<td>${getInterpolation('shotClock', this.participantsManagerOfDualMetric)}</td>`}
-							</tr>
-						</tbody>`
+						<tr>
+							${ths.join('')}
+							${ths.reverse().join('')}
+							${!isStarted ? EMPTY_HTML : '<th scope="col">Part</th>'}
+							${!isStarted ? EMPTY_HTML : '<th scope="col">Time</th>'}
+							${!isSomeBallPossession ? EMPTY_HTML : '<th scope="col">Possession</th>'}
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							${bodyCells(false).join('')}
+							${bodyCells(true).reverse().join('')}
+							${!isStarted ? EMPTY_HTML : `<td>${getOrdinal(this.parts.current)}</td>`}
+							${!isStarted ? EMPTY_HTML : `<td>${getInterpolation('mainClock', this.participantsManagerOfDualMetric)}</td>`}
+							${!isSomeBallPossession ? EMPTY_HTML : `<td>${getInterpolation('shotClock', this.participantsManagerOfDualMetric)}</td>`}
+						</tr>
+					</tbody>`
 				);
 			}),
 			getTime = (id: TimerId) => `<span class="${getClassNames(this.isRunning() ? null : 'lowlight')}">${this.timer.getTimeOf(id)}</span>`,
@@ -187,9 +187,9 @@ export default class BasketballMatch extends Match {
 		if (!this.isPaused())
 			throw new Error('The match is not paused');
 	}
-	private verifyIsInTimeoutOrPreparing() {
-		if (!this.isInTimeout() && !this.isPreparing())
-			throw new Error('The match is not in timeout nor is being prepared');
+	private verifyIsPreparingOrInTimeout() {
+		if (!this.isPreparing() && !this.isInTimeout())
+			throw new Error('The match is not being prepared nor is in timeout');
 	}
 	private isInFreeThrowsSituation = () => this.doneFreeThrows > 0;
 	private verifyIsNotInFreeThrowsSituation() {
@@ -201,7 +201,7 @@ export default class BasketballMatch extends Match {
 		super.start(() => { this.timer.resetAll(); });
 	}
 
-	private verifyOpeningBallPossessorIsOk(value?: OpeningBallPossessor) {
+	private verifyOpeningBallPossessorIsValid(value?: OpeningBallPossessor) {
 		const hasValue = isDefined(value);
 		if (!this.wasPlayed) {
 			if (!hasValue)
@@ -230,8 +230,8 @@ export default class BasketballMatch extends Match {
 				if (hasOpeningBallPossessor)
 					this.verifyIsPreparing();
 				else
-					this.verifyIsInTimeoutOrPreparing();
-				this.verifyOpeningBallPossessorIsOk(openingBallPossessor);
+					this.verifyIsPreparingOrInTimeout();
+				this.verifyOpeningBallPossessorIsValid(openingBallPossessor);
 			},
 			[CacheId.Scoreboard, CacheId.MainClock, CacheId.ShotClock]
 		);
@@ -452,7 +452,7 @@ export default class BasketballMatch extends Match {
 		this.parts.current++;
 		this.timer.resetAll();
 
-		this.stage = Stage.Preparing;
+		this.stage = MatchStage.Preparing;
 
 		info('The quarter is being prepared…');
 

@@ -1,10 +1,9 @@
 import { NOT_AVAILABLE_ABBR } from '../../../consts';
-import type { AnyParticipant } from '../../../participant';
-import type { Callback } from '../../../types';
-import { DeveloperError, DualMetric, isDefined, isUndefined } from '../../../utils';
-import { ParticipantsManagerOfDualMetric } from '../../../utils/dual-metric';
+import { AnyParticipant } from '../../../participant';
+import { Callback } from '../../../types';
+import { DeveloperError, DualMetric, isDefined, isUndefined, ParticipantsManagerOfDualMetric } from '../../../utils';
 import { Id } from './enums';
-import type { Data, Qty, Value } from './types';
+import { Data, Qty, Value } from './types';
 
 export default class Stats {
 	constructor(participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric) {
@@ -26,7 +25,7 @@ export default class Stats {
 	getOfTwo = (id: Id) => this.#get(id, qty => qty.getOfTwo());
 
 	makeAvailable(...list: Array<Id>) {
-		list.forEach(item => { this.#data[item] = new DualMetric(this.#participantsManagerOfDualMetric, 0); });
+		list.forEach(id => { this.#data[id] = new DualMetric(this.#participantsManagerOfDualMetric, 0); });
 	}
 
 	#set(id: Id, participant: AnyParticipant, cb: Callback<[Qty]>) {
@@ -43,6 +42,6 @@ export default class Stats {
 	}
 
 	increase(id: Id, participant: AnyParticipant) {
-		this.#set(id, participant, qty => { qty.increment(); });
+		this.#set(id, participant, qty => { qty.increase(); });
 	}
 }
