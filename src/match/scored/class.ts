@@ -8,7 +8,7 @@ import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../uti
 import { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
 import { OnIncrease, ScoreLevel, Scorer, SHOULD_CONTINUE_SCORER_LOOP, SHOULD_INTERRUPT_SCORER_LOOP } from './utils';
 
-import './css/index.css';
+import './styles/index.css';
 
 export default abstract class ScoredMatch extends Match {
 	constructor(private readonly ownConfig: Config) {

@@ -7,7 +7,7 @@ import { InterpolationDefinition, StatId } from '../../utils';
 import { ADVANTAGE_SYMBOL, MIN_TO_WIN_GAME, MIN_TO_WIN_SET, MIN_TO_WIN_TIE_BREAK, POINTS_IN_GAME, SERVES_PER_POINT, TOTAL_GAMES_WHEN_TIE_BREAK_WON, TOTAL_OF_SETS } from './consts';
 import { getTotalGames, isInTieBreak } from './fns';
 
-import './css/index.css';
+import './styles/index.css';
 
 /** Represents a tennis match. */
 export default class TennisMatch extends ScoredMatch {

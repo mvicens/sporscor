@@ -6,7 +6,7 @@ import { RestType, Stage } from './enums';
 import { Config, MethodName, PanelDefinition, StatsList, Timeouts, WithParticipantOne } from './types';
 import { Cache, CacheId, EMPTY_INTERPOLATION_DEFINITION, HtmlGenerator, LABEL_BY_STAT_ID, StatId, Stats } from './utils';
 
-import './css/index.css';
+import './styles/index.css';
 
 export default abstract class Match {
 	constructor(private readonly config: Config) {
