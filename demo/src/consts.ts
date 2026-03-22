@@ -2,15 +2,15 @@ import { BasketballMatch, TennisMatch, VolleyballMatch } from './lib';
 
 export const SPORTS = [
 	{
-		name: '🏀 Basketball',
+		label: '🏀 Basketball',
 		class: BasketballMatch
 	},
 	{
-		name: '🎾 Tennis',
+		label: '🎾 Tennis',
 		class: TennisMatch
 	},
 	{
-		name: '🏐 Volleyball',
+		label: '🏐 Volleyball',
 		class: VolleyballMatch
 	}
 ] as const;
