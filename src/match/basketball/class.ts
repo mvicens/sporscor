@@ -1,7 +1,6 @@
 import Match, { IS_PERCENTAGE_STAT_ID, MatchStage, RestType, Sport } from '..';
 import { EMPTY_HTML } from '../../consts';
 import { Team } from '../../participant';
-import { Qty } from '../../types';
 import { assertIsDefined, DualMetric, getClassNames, getOrdinal, info, isDefined, isTruth, noop, upperFirst, warn } from '../../utils';
 import { CacheId, getInterpolation, InterpolationDefinition, StatId } from '../utils';
 import { DECIMALED_MINUTES, DECIMALED_SHOT_CLOCK_SECONDS, FREE_THROWS_BY_FOUL_WHEN_FAILED_FIELD_BASKET, FREE_THROWS_BY_UNSPORTSMANLIKE_OR_DISQUALIFYING_FOUL, INITIAL_MINUTES, INITIAL_SHOT_CLOCK_SECONDS, LAST_PART_OF_FIRST_HALF, MAIN_CLOCK_ID, PARTS, SHOT_CLOCK_ID, TIMEOUTS_PER_FIRST_HALF, TIMEOUTS_PER_SECOND_HALF } from './consts';
@@ -331,7 +330,7 @@ export default class BasketballMatch extends Match {
 		});
 	}
 
-	private logBasket(qty: Qty, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: IsSuccessful, verify = noop, execute = noop) {
+	private logBasket(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: IsSuccessful, verify = noop, execute = noop) {
 		this.verifyIsPlayingOrAtRest();
 		verify();
 
@@ -354,7 +353,7 @@ export default class BasketballMatch extends Match {
 		if (this.wasOutOfTimeFieldBasketAttempted)
 			throw new Error('The attempted out-of-time field basket is not unique');
 	}
-	private logFieldBasket(qty: Qty, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: IsSuccessful) {
+	private logFieldBasket(qty: number, statIdAttempted: StatId, statIdMade: StatId, isSuccessful: IsSuccessful) {
 		this.logBasket(
 			qty,
 			statIdAttempted,

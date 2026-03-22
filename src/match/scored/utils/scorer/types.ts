@@ -1,5 +1,5 @@
 import Scorer from '.';
-import { Callback, EventHandler, Html, ValueOrProvider } from '../../../../types';
+import { Callback, EventHandler, ValueOrProvider } from '../../../../types';
 import { DualMetric, ParticipantsManagerOfDualMetric } from '../../../../utils';
 import { ScoreLevel } from './enums';
 
@@ -8,7 +8,7 @@ export type ScoreLevelDefinition = {
 	scoreLevel: ScoreLevel;
 	target: ValueOrProviderFromScorer<number>;
 	shouldWinByTwo: ValueOrProviderFromScorer<boolean>;
-	transformer?: Callback<[count: number, opponentCount: number, Scorer], number | Html>;
+	transformer?: Callback<[count: number, opponentCount: number, Scorer], number | string>;
 };
 
 export type ScoreLevelDefinitions = [totalOfSets: number, ...Array<ScoreLevelDefinition>];

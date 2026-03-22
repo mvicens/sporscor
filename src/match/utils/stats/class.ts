@@ -3,7 +3,7 @@ import { AnyParticipant } from '../../../participant';
 import { Callback } from '../../../types';
 import { DeveloperError, DualMetric, isDefined, isUndefined, ParticipantsManagerOfDualMetric } from '../../../utils';
 import { Id } from './enums';
-import { Data, Qty, Value } from './types';
+import { Data, Qty } from './types';
 
 export default class Stats {
 	constructor(participantsManagerOfDualMetric: ParticipantsManagerOfDualMetric) {
@@ -14,7 +14,7 @@ export default class Stats {
 
 	#data: Data = {};
 
-	#get(id: Id, cb: Callback<[Qty], Value>) {
+	#get(id: Id, cb: Callback<[Qty], ReturnType<Qty['get']>>) {
 		const qty = this.#data[id];
 		return isDefined(qty) ? cb(qty) : NOT_AVAILABLE_ABBR;
 	}

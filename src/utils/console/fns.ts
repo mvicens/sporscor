@@ -1,9 +1,8 @@
 import { isDefined, isUndefined, upperFirst } from '..';
-import { Msg } from '../../types';
 import { ConsoleMethod } from './types';
 
 const getConsoleLogger = (method: ConsoleMethod) =>
-	function (msg: Msg, styles?: string) {
+	function (msg: string, styles?: string) {
 		msg = upperFirst(msg);
 		if (isDefined(styles))
 			msg = '%c' + msg;

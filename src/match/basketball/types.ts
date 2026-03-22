@@ -1,9 +1,8 @@
 import { Team } from '../../participant';
-import { Qty } from '../../types';
 
 export type Parts = {
-	current: Qty;
-	total: Qty;
+	current: number;
+	total: number;
 };
 
 export type OpeningBallPossessor = Team;

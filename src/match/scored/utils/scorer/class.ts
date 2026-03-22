@@ -1,4 +1,4 @@
-import { Callback, Index, MapIterable } from '../../../../types';
+import { Callback, MapIterable } from '../../../../types';
 import { assertIsDefined, assertIsNumber, assertIsRecord, DeveloperError, DualMetric, isDefined, isNumber, ParticipantsManagerOfDualMetric, resolveValueOrProvider, verifyIsOddNumber, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_CONTINUE, SHOULD_INTERRUPT } from './consts';
 import { ScoreLevel } from './enums';
@@ -160,7 +160,7 @@ export default class Scorer {
 		return lastCountHierarchyChild;
 	}
 
-	getCountBy(...indexes: Array<Index>) {
+	getCountBy(...indexes: Array<number>) {
 		let result: CountHierarchyChild = this.#mainCountHierarchy;
 		indexes.forEach(index => {
 			assertIsCountHierarchy(result);

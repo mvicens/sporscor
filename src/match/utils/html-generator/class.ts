@@ -1,21 +1,21 @@
 import { Sport } from '../..';
 import { EMPTY_HTML } from '../../../consts';
 import { AnyParticipant } from '../../../participant';
-import { ClassName, Html } from '../../../types';
+import { ClassName } from '../../../types';
 import { assertIsDefined, getClassNames, isDefined, isNull, ParticipantsManagerOfDualMetric, resolveValueOrProvider } from '../../../utils';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL } from './consts';
 import { getInterpolation, getInterpolationFromContent } from './fns';
-import { InterpolationContent, InterpolationDefinition } from './types';
+import { InterpolationContent, InterpolationDefinition, Value } from './types';
 
 export default class HtmlGenerator {
-	constructor(html: Html, interpolationDefinition: InterpolationDefinition, sport: Sport, classNames: Array<ClassName>) {
+	constructor(html: Value, interpolationDefinition: InterpolationDefinition, sport: Sport, classNames: Array<ClassName>) {
 		this.#html = html;
 		this.#interpolationDefinition = interpolationDefinition;
 		this.#sport = sport;
 		this.#classNames = classNames;
 	}
 
-	#html: Html;
+	#html: Value;
 
 	#interpolationDefinition: InterpolationDefinition;
 

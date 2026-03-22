@@ -1,6 +1,8 @@
 import { AnyParticipant } from '../../../participant';
-import { Html, Index, MapIterable, ValueOrProvider } from '../../../types';
+import { MapIterable, ValueOrProvider } from '../../../types';
 import { INTERPOLATION_END_SYMBOL, INTERPOLATION_START_SYMBOL, INTERPOLATION_SUFFIX_ONE, INTERPOLATION_SUFFIX_TWO } from './consts';
+
+export type Value = string;
 
 export type InterpolationSuffix = typeof INTERPOLATION_SUFFIX_ONE | typeof INTERPOLATION_SUFFIX_TWO;
 
@@ -16,7 +18,7 @@ type InterpolationId =
 	| 'shotClock';
 export type InterpolationDefinitionKey =
 	| InterpolationId
-	| [InterpolationId, Index];
+	| [InterpolationId, index: number];
 
-type HtmlValueOrProvider = ValueOrProvider<Html, AnyParticipant | undefined>;
+type HtmlValueOrProvider = ValueOrProvider<Value, AnyParticipant | undefined>;
 export type InterpolationDefinition = MapIterable<InterpolationDefinitionKey, HtmlValueOrProvider>;

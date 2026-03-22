@@ -2,7 +2,7 @@ import pluralize from 'pluralize';
 import Match, { RestType, StatsList } from '..';
 import { EMPTY_HTML } from '../../consts';
 import { AnyParticipant } from '../../participant';
-import { Callback, ClassName, Html, ValueOrProvider } from '../../types';
+import { Callback, ClassName, ValueOrProvider } from '../../types';
 import { assertIsDefined, assertIsNumber, DualMetric, getClassNames, getLightedElem, getOrdinal, identity, info, isBoolean, isDefined, isString, isUndefined, noop, resolveValueOrProvider, upperFirst, verifyIsPositiveInteger, warn } from '../../utils';
 import { EMPTY_INTERPOLATION_DEFINITION, getInterpolation, StatId } from '../utils';
 import { Config, ExecuteWithServeInfo, GetColsCbArg, IsColsOfSetsSummarized, IsServeIndicatorInOwnCol } from './types';
@@ -72,7 +72,7 @@ export default abstract class ScoredMatch extends Match {
 
 	private getClassName = () => resolveValueOrProvider(this.ownConfig.className, this.scorer);
 
-	private getCols(cb: Callback<[GetColsCbArg], Html>, isColsOfSetsSummarized: IsColsOfSetsSummarized, participant?: AnyParticipant) {
+	private getCols(cb: Callback<[GetColsCbArg], string>, isColsOfSetsSummarized: IsColsOfSetsSummarized, participant?: AnyParticipant) {
 		let html = EMPTY_HTML;
 		const { scorer } = this;
 		scorer.forEachScoreLevelDefinition(item => {
@@ -151,7 +151,7 @@ export default abstract class ScoredMatch extends Match {
 		});
 		return html;
 	}
-	private getServeTag(html: ValueOrProvider<Html, Html>, participant?: AnyParticipant) {
+	private getServeTag(html: ValueOrProvider<string, string>, participant?: AnyParticipant) {
 		if (this.isFinished())
 			return EMPTY_HTML;
 

@@ -1,6 +1,6 @@
 import { ensureString, isNonNullable } from '.';
 import { CLASS_NAME_BY_ID } from '../consts';
-import { Callback, ClassName, Html } from '../types';
+import { Callback, ClassName } from '../types';
 
 export const getClassNames = (...list: Array<ClassName>) => list
 	.filter(isNonNullable)
@@ -10,8 +10,8 @@ export const getClassNames = (...list: Array<ClassName>) => list
 export function getLightedElem<T extends number>(
 	n: T,
 	compared: number,
-	transformer: Callback<[T], Html> = ensureString
-): Html {
+	transformer: Callback<[T], string> = ensureString
+) {
 	const className: ClassName =
 		n > compared
 			? 'highlight'

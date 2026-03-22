@@ -1,6 +1,6 @@
 import { MatchConfig } from '..';
 import { AnyParticipant } from '../../participant';
-import { Callback, ClassName, Index, ValueOrProvider } from '../../types';
+import { Callback, ClassName, ValueOrProvider } from '../../types';
 import { OnIncrease, ScoreLevelDefinition, ScoreLevelDefinitions, Scorer } from './utils';
 
 type IsOpeningServer = boolean;
@@ -26,7 +26,7 @@ export type GetColsCbArg = {
 		& Pick<ScoreLevelDefinition, 'scoreLevel' | 'target'>
 		& {
 			name: string;
-			index?: Index;
+			index?: number;
 			isConcluded: boolean;
 		}
 	);

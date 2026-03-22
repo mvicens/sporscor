@@ -1,6 +1,6 @@
 import { EMPTY_HTML, NOT_AVAILABLE_ABBR } from '../consts';
 import { AnyParticipant, Team } from '../participant';
-import { ClassName, Defined, Html, OneOrMany, TableHeaderScope } from '../types';
+import { ClassName, Defined, OneOrMany } from '../types';
 import { assertIsDefined, assertIsNonNull, assertIsNumber, DeveloperError, DualMetric, ensureArray, ensureNumber, ensureString, getClassNames, getLightedElem, getNumber, getParticipantsManagerOfDualMetric, getPercentage, getRatio, info, isArray, isDefined, isFunction, isMemberOf, isNaN, isString, isUndefined, noop, ParticipantsManagerOfDualMetric, resolveValueOrProvider, upperFirst, warn } from '../utils';
 import { RestType, Stage } from './enums';
 import { Config, MethodName, PanelDefinition, StatsList, Timeouts, WithParticipantOne } from './types';
@@ -57,14 +57,14 @@ export default abstract class Match {
 
 	protected getParticipantTypeName = () => this.participant.getOfOne().getType();
 
-	private getRootHtml(html: Html, classNames: Array<ClassName>, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
+	private getRootHtml(html: string, classNames: Array<ClassName>, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
 		const htmlGenerator = new HtmlGenerator(html, interpolationDefinition, this.config.sport, classNames);
 		return htmlGenerator.get(this.participant.getAll(), this.participantsManagerOfDualMetric);
 	}
 
 	/** @return The HTML content. */
 	public getScoreboard() { }
-	protected getUltimateScoreboard(html: Html, className?: ClassName, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
+	protected getUltimateScoreboard(html: string, className?: ClassName, interpolationDefinition = EMPTY_INTERPOLATION_DEFINITION) {
 		if (this.isUnstarted()) {
 			html = EMPTY_HTML;
 			warn('No scoreboard content');
@@ -87,8 +87,8 @@ export default abstract class Match {
 				StatId.TotalPoints,
 				...statsList
 			],
-			getTh = (scope: TableHeaderScope, className: ClassName, content = EMPTY_HTML) => `<th scope="${scope}" class="${getClassNames(className)}">${content}</th>`;
-		let html: Html = this.wasPlayed
+			getTh = (scope: 'col' | 'row', className: ClassName, content = EMPTY_HTML) => `<th scope="${scope}" class="${getClassNames(className)}">${content}</th>`;
+		let html = this.wasPlayed
 			? currentStatsList
 				.map(stat => {
 					const
@@ -185,9 +185,9 @@ export default abstract class Match {
 		this.cache.get(CacheId.Panel, () => {
 			const methodNames: Array<[MethodName, WithParticipantOne?]> = [];
 
-			let html: Html = definition
+			let html = definition
 				.map(item => {
-					const html: Html = item
+					const html = item
 						.map(([text, method, withParticipantOne]) => {
 							methodNames.push([method, withParticipantOne ?? false]);
 							return `<button>${upperFirst(text)}</button>`;

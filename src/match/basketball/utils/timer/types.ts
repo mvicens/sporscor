@@ -1,5 +1,5 @@
 import Timer from 'easytimer.js';
-import { EventHandler, Html } from '../../../../types';
+import { EventHandler } from '../../../../types';
 
 type Seconds = number;
 export type ExternalItem = {
@@ -11,7 +11,7 @@ export type ExternalItem = {
 };
 
 type ShouldUpdate = true;
-type ShouldNotUpdate = Html; // In order to efficiency (cached content)
+type ShouldNotUpdate = string; // In order to efficiency (cached content)
 export type InternalItem =
 	& ExternalItem
 	& {

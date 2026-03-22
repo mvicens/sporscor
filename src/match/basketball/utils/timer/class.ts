@@ -1,6 +1,6 @@
 import { Timer as EasyTimer } from 'easytimer.js';
 import { EMPTY_HTML } from '../../../../consts';
-import { Callback, Html } from '../../../../types';
+import { Callback } from '../../../../types';
 import { assertIsDefined, DeveloperError, ensureNumber, ensureString, isDefined, isPositiveNumber, isString, isUndefined, padStartNumber, verifyIsNonNegativeInteger, verifyIsNumberGreaterThan, verifyIsNumberLessThan, verifyIsPositiveInteger } from '../../../../utils';
 import { SHOULD_UPDATE } from './consts';
 import { ExternalItem, Id, InternalItem } from './types';
@@ -155,7 +155,7 @@ export default class Timer {
 			return false;
 		});
 
-		const content: Html = amounts
+		const content = amounts
 			.map(({ value }, i) => {
 				const isFirst = i === 0;
 				if (!isFirst) {
@@ -168,7 +168,7 @@ export default class Timer {
 			})
 			.join(':');
 
-		let attr: Html = amounts
+		let attr = amounts
 			.filter(({ value }) => {
 				const numValue = ensureNumber(value);
 				return isPositiveNumber(numValue);
